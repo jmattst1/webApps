@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PracticeTempo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f172a;
+      --panel: #172554;
+      --panel-alt: #1e3a8a;
+      --card: #1d4ed8;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #eff6ff;
+      --muted: #bfdbfe;
+      --accent: #f59e0b;
+      --accent-soft: rgba(245, 158, 11, 0.16);
+      --success: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    .eyebrow,
+    .label,
+    .muted {
+      color: var(--muted);
+    }
+
+    .hero p {
+      margin-top: 6px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .panel,
+    .task-card,
+    .chip,
+    .timeline-row,
+    .metric,
+    .form-card {
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.64);
+      border-radius: 18px;
+    }
+
+    .panel,
+    .form-card {
+      padding: 20px;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .timer {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    .controls,
+    .chips,
+    .task-actions,
+    .categories,
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .chip {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font: inherit;
+    }
+
+    button {
+      background: var(--card);
+      color: var(--text);
+      cursor: default;
+    }
+
+    button.secondary {
+      background: rgba(59, 130, 246, 0.18);
+      border-color: rgba(96, 165, 250, 0.35);
+    }
+
+    button.warning {
+      background: var(--accent-soft);
+      border-color: rgba(245, 158, 11, 0.35);
+      color: #fde68a;
+    }
+
+    .chip {
+      background: rgba(37, 99, 235, 0.14);
+      color: var(--muted);
+      border-color: rgba(147, 197, 253, 0.18);
+    }
+
+    .active-task {
+      background: linear-gradient(135deg, rgba(30, 64, 175, 0.95), rgba(15, 23, 42, 0.9));
+    }
+
+    .task-title {
+      margin-top: 14px;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .task-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      padding: 14px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.2rem;
+      margin-top: 8px;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .task-card {
+      padding: 18px;
+    }
+
+    .task-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .task-card .muted {
+      display: block;
+      margin-top: 6px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      min-height: 46px;
+    }
+
+    .analytics-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .timeline {
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .timeline-row {
+      padding: 14px 16px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 120px 1.4fr 1fr 120px;
+      align-items: center;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      color: #bbf7d0;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    @media (max-width: 960px) {
+      .span-4,
+      .span-5,
+      .span-6,
+      .span-7,
+      .span-8 {
+        grid-column: span 12;
+      }
+
+      .analytics-grid,
+      .task-meta,
+      .form-grid,
+      .timeline-row {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        flex-direction: column;
+        align-items: start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">PracticeTempo</p>
+        <h1>Musician Studio Companion</h1>
+        <p>Published mockup of the Music practice tracker page for GitHub Pages.</p>
+      </div>
+      <div class="chip">GitHub Pages ready</div>
+    </section>
+
+    <section class="grid">
+      <article class="panel span-4">
+        <p class="label">SESSION TIME</p>
+        <div class="timer">01:42:17</div>
+        <div class="status"><span class="dot"></span> Session running</div>
+      </article>
+
+      <article class="panel span-8">
+        <p class="label">Metronome</p>
+        <div class="controls" style="margin-top: 14px;">
+          <button>Add Piece</button>
+          <button class="warning">START</button>
+          <button class="secondary">92 BPM</button>
+          <button class="secondary">TAP</button>
+          <button class="secondary">-5</button>
+          <button class="secondary">-1</button>
+          <button class="secondary">+1</button>
+          <button class="secondary">+5</button>
+        </div>
+        <div class="chips" style="margin-top: 14px;">
+          <div class="chip">Adagio (60)</div>
+          <div class="chip">Andante (84)</div>
+          <div class="chip">Moderato (108)</div>
+          <div class="chip">Allegro (132)</div>
+          <div class="chip">Presto (168)</div>
+        </div>
+        <div class="chips" style="margin-top: 14px;">
+          <div class="chip">Time Sig: 2/4</div>
+          <div class="chip">3/4</div>
+          <div class="chip">4/4</div>
+          <div class="chip">6/8</div>
+        </div>
+      </article>
+
+      <article class="panel active-task span-5">
+        <p class="label">NOW PLAYING · Technique</p>
+        <div class="task-title">Bach Prelude in C</div>
+        <p class="muted">Bars 1-16 · Focus: balanced voicing and relaxed wrist</p>
+        <div class="task-meta">
+          <div class="metric">
+            <span class="label">TASK TIME</span>
+            <strong>00:27:43</strong>
+          </div>
+          <div class="metric">
+            <span class="label">PLANNED</span>
+            <strong>30m</strong>
+          </div>
+          <div class="metric">
+            <span class="label">PROGRESS</span>
+            <strong>92%</strong>
+          </div>
+        </div>
+        <div class="task-actions" style="margin-top: 18px;">
+          <button>Pause</button>
+          <button class="secondary">Stop</button>
+        </div>
+      </article>
+
+      <article class="panel span-7">
+        <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+          <div>
+            <p class="label">Practice Pieces</p>
+            <h2 style="margin-top: 6px;">One-Tap Practice Switcher</h2>
+          </div>
+          <div class="categories">
+            <div class="chip">All (4)</div>
+            <div class="chip">Technique</div>
+            <div class="chip">Repertoire</div>
+            <div class="chip">Scales</div>
+          </div>
+        </div>
+
+        <div class="task-list">
+          <article class="task-card">
+            <p class="label">TECHNIQUE</p>
+            <h3>Bach Prelude in C</h3>
+            <p class="muted">Bars 1-16 · Balanced voicing and hand relaxation</p>
+            <span class="muted">Time Spent 00:27:43 · Goal 30 min</span>
+          </article>
+          <article class="task-card">
+            <p class="label">REPERTOIRE</p>
+            <h3>Chopin Nocturne Op. 9 No. 2</h3>
+            <p class="muted">Middle section · Cantabile phrasing and pedal timing</p>
+            <span class="muted">Time Spent 00:18:10 · Goal 20 min</span>
+          </article>
+          <article class="task-card">
+            <p class="label">SCALES</p>
+            <h3>D Major Two Octaves</h3>
+            <p class="muted">Hands together · Even articulation at 92 BPM</p>
+            <span class="muted">Time Spent 00:11:24 · Goal 15 min</span>
+          </article>
+        </div>
+      </article>
+
+      <article class="form-card span-6">
+        <p class="label">Add New Piece</p>
+        <h2 style="margin-top: 6px;">Practice Piece Form</h2>
+        <div class="form-grid">
+          <div class="field full">
+            <span class="label">PIECE / WORK NAME *</span>
+            <div class="input">Debussy · Arabesque No. 1</div>
+          </div>
+          <div class="field">
+            <span class="label">BAR / MEASURE FOCUS</span>
+            <div class="input">Bars 32-48</div>
+          </div>
+          <div class="field">
+            <span class="label">CATEGORY</span>
+            <div class="input">Repertoire</div>
+          </div>
+          <div class="field">
+            <span class="label">PLANNED TIME (MINS)</span>
+            <div class="input">25</div>
+          </div>
+          <div class="field full">
+            <span class="label">TECHNIQUE &amp; FOCUS GOALS</span>
+            <div class="input">Shape long phrases, refine pedaling, and keep the upper voice singing.</div>
+          </div>
+        </div>
+        <div class="buttons" style="margin-top: 16px;">
+          <button class="secondary">Cancel</button>
+          <button>Save Piece</button>
+        </div>
+      </article>
+
+      <article class="panel span-6">
+        <p class="label">Practice Session Analytics</p>
+        <div class="analytics-grid">
+          <div class="metric">
+            <span class="label">Total Time Today</span>
+            <strong>01:42:17</strong>
+          </div>
+          <div class="metric">
+            <span class="label">Planned Total</span>
+            <strong>90 mins</strong>
+          </div>
+          <div class="metric">
+            <span class="label">Pieces Practiced</span>
+            <strong>3 / 4</strong>
+          </div>
+          <div class="metric">
+            <span class="label">Goal Completion</span>
+            <strong>76%</strong>
+          </div>
+        </div>
+        <div class="chips" style="margin-top: 14px;">
+          <div class="chip">Technique · 00:27:43</div>
+          <div class="chip">Repertoire · 00:49:20</div>
+          <div class="chip">Scales · 00:25:14</div>
+        </div>
+      </article>
+
+      <article class="panel span-12">
+        <p class="label">Practice Switches History</p>
+        <div class="timeline">
+          <div class="timeline-row">
+            <strong>19:02:11</strong>
+            <span>Bach Prelude in C</span>
+            <span class="muted">Bars 1-16</span>
+            <strong>00:27:43</strong>
+          </div>
+          <div class="timeline-row">
+            <strong>18:39:45</strong>
+            <span>Chopin Nocturne Op. 9 No. 2</span>
+            <span class="muted">Middle section</span>
+            <strong>00:18:10</strong>
+          </div>
+          <div class="timeline-row">
+            <strong>18:21:04</strong>
+            <span>D Major Two Octaves</span>
+            <span class="muted">Hands together</span>
+            <strong>00:11:24</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
