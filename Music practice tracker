@@ -1,0 +1,87 @@
+PracticeTempo
+Musician Studio Companion
+SESSION TIME
+{{ vm.formatTime(vm.sessionTotalSeconds) }}
+
+Metronome
+
+Add Piece
+{{ vm.metronome.isPlaying ? 'STOP' : 'START' }}
+{{ vm.metronome.bpm }} BPM
+
+TAP
+-5 -1 +1 +5
+Adagio (60) Andante (84) Moderato (108) Allegro (132) Presto (168)
+Time Sig:
+2/4 3/4 4/4 6/8
+
+NOW PLAYING {{ VM.ACTIVETASK.CATEGORY }}
+
+
+
+
+{{ vm.activeTask.title }}
+{{ vm.activeTask.bars }}
+Focus: {{ vm.activeTask.notes }}
+TASK TIME
+{{ vm.formatTime(vm.activeTask.secondsSpent) }}
+PLANNED
+{{ vm.activeTask.plannedMinutes }}m
+
+{{ vm.isPaused ? 'Resume' : 'Pause' }}
+
+Stop
+Progress towards goal {{ vm.getTaskProgressPercent(vm.activeTask) }}%
+
+All ({{ vm.tasks.length }}) {{ cat }}
+Analytics Reset Times
+One-Tap Practice Switcher: Tap any piece card below to immediately start timing that item. Tapping a new piece automatically stops and logs the previous one.
+{{ TASK.CATEGORY }}
+
+{{ task.title }}
+{{ task.bars }}
+{{ task.notes }}
+Time Spent {{ vm.formatTime(task.secondsSpent) }}
+Goal {{ task.plannedMinutes }} min
+
+
+{{ vm.isPaused ? 'PAUSED - TAP TO RESUME' : 'NOW PLAYING' }} TAP TO START
+No pieces found in this category
+
+Add New Piece
+{{ vm.isPaused ? 'PAUSED' : 'NOW PLAYING' }}
+{{ vm.activeTask.title }}
+{{ vm.formatTime(vm.activeTask.secondsSpent) }}
+
+{{ vm.editingTask.id ? 'Edit Practice Piece' : 'Add New Practice Piece' }}
+PIECE / WORK NAME *
+BAR / MEASURE FOCUS
+CATEGORY
+                  {{cat}}
+                
+PLANNED TIME (MINS)
+TECHNIQUE & FOCUS GOALS
+Cancel Save Piece
+Practice Session Analytics
+Total Time Today
+{{ vm.formatTime(vm.sessionTotalSeconds) }}
+Planned Total
+{{ vm.getTotalPlannedMinutes() }} mins
+Pieces Practiced
+{{ vm.getPracticedPiecesCount() }} / {{ vm.tasks.length }}
+Overall Goal Completion
+{{ vm.getOverallCompletionPercent() }}%
+Time Spent by Category
+{{ cat }} {{ vm.formatTime(vm.getCategoryTimeSpent(cat)) }}
+
+Practice Switches History
+Time
+Piece
+Measure Focus
+Duration
+{{ log.timestamp | date:'HH:mm:ss' }}
+{{ log.title }}
+{{ log.bars || '-' }}
+{{ vm.formatTime(log.durationSeconds) }}
+No completed practice switches recorded yet.
+Close
