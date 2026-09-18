@@ -29,28 +29,14 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Prepare site artifact
+        shell: bash
         run: |
           mkdir -p dist
-          while IFS= read -r file; do
-            mkdir -p "dist/$(dirname "$file")"
-            cp "$file" "dist/$file"
-          done < <(
-            git ls-files \
-              '*.html' \
-              '*.css' \
-              '*.js' \
-              '*.json' \
-              '*.png' \
-              '*.jpg' \
-              '*.jpeg' \
-              '*.gif' \
-              '*.svg' \
-              '*.webp' \
-              '*.ico' \
-              '*.txt' \
-              '*.xml' \
-              '*.webmanifest'
-          )
+          git archive --format=tar HEAD \
+            -- . \
+            ':(exclude).github' \
+            ':(exclude)README.md' \
+            | tar -xf - -C dist
           touch dist/.nojekyll
 
       - name: Upload site artifact
