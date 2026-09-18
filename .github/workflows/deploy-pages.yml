@@ -32,8 +32,12 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          git archive --format=tar HEAD | tar -xf - -C dist
-          rm -rf dist/.github dist/README.md
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='dist/' \
+            --exclude='README.md' \
+            ./ dist/
           touch dist/.nojekyll
 
       - name: Upload site artifact
