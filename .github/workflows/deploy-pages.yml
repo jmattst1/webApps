@@ -51,6 +51,7 @@ jobs:
               '*.xml' \
               '*.webmanifest'
           )
+          touch dist/.nojekyll
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
