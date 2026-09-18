@@ -109,6 +109,7 @@
     .cat-repertoire { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
     .cat-sightreading { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
     .cat-technique { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .bg-repertoire { background-color: var(--accent-purple) !important; }
 
     /* Equalizer Bar Animation */
     .eq-container {
@@ -429,7 +430,7 @@
     <div class="row g-3">
       <div class="col-12 col-md-6 col-lg-4" ng-repeat="task in vm.filteredTasks = (vm.tasks | filter:vm.categoryFilter) track by task.id">
         <div class="tempo-card p-3 h-100 d-flex flex-column justify-content-between" 
-             ng-class="{'active-playing': vm.activeTask.id === task.id}"
+             ng-class="{'active-playing': vm.isActiveTask(task)}"
              ng-click="vm.selectTask(task)">
           
           <div>
@@ -489,13 +490,13 @@
 
             <!-- Big Touch Tap Indicator Button -->
             <button class="btn btn-touch w-full w-100" 
-                    ng-class="vm.activeTask.id === task.id ? 'btn-success fw-bold' : 'btn-outline-info'">
-              <i class="fa-solid" ng-class="vm.activeTask.id === task.id ? (vm.isPaused ? 'fa-play' : 'fa-volume-high') : 'fa-play'"></i>
+                    ng-class="vm.isActiveTask(task) ? 'btn-success fw-bold' : 'btn-outline-info'">
+              <i class="fa-solid" ng-class="vm.isActiveTask(task) ? (vm.isPaused ? 'fa-play' : 'fa-volume-high') : 'fa-play'"></i>
               <span>
-                <span ng-if="vm.activeTask.id === task.id">
+                <span ng-if="vm.isActiveTask(task)">
                   {{ vm.isPaused ? 'PAUSED - TAP TO RESUME' : 'NOW PLAYING' }}
                 </span>
-                <span ng-if="vm.activeTask.id !== task.id">
+                <span ng-if="!vm.isActiveTask(task)">
                   TAP TO START
                 </span>
               </span>
@@ -1044,6 +1045,10 @@
         return 'bg-success';
       };
 
+      vm.isActiveTask = function(task) {
+        return !!(vm.activeTask && task && vm.activeTask.id === task.id);
+      };
+
       vm.getCategoryClass = function(category) {
         switch (category) {
           case 'Warmup': return 'cat-warmup';
@@ -1059,10 +1064,17 @@
         switch (category) {
           case 'Warmup': return 'bg-warning';
           case 'Scales': return 'bg-primary';
-          case 'Repertoire': return 'bg-purple';
+          case 'Repertoire': return 'bg-repertoire';
           case 'Sight-reading': return 'bg-success';
           case 'Technique': return 'bg-danger';
           default: return 'bg-info';
+        }
+      };
+
+      vm.scrollToActiveTask = function() {
+        var activeCard = $window.document.querySelector('.tempo-card.active-playing');
+        if (activeCard && activeCard.scrollIntoView) {
+          activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       };
 
