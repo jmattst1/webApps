@@ -993,7 +993,7 @@
       };
 
       vm.deleteTask = function(taskId) {
-        if (confirm("Are you sure you want to delete this piece?")) {
+        if ($window.confirm("Are you sure you want to delete this piece?")) {
           if (vm.activeTask && vm.activeTask.id === taskId) {
             vm.stopActiveTask();
           }
@@ -1003,7 +1003,7 @@
       };
 
       vm.resetAllSessionPrompt = function() {
-        if (confirm("Reset all practice timers for today? Your piece list will be preserved.")) {
+        if ($window.confirm("Reset all practice timers for today? Your piece list will be preserved.")) {
           vm.activeTask = null;
           vm.isPaused = false;
           activeTaskStartTime = null;
@@ -1202,6 +1202,13 @@
         vm.sessionTotalSeconds = 1560;
         vm.saveState();
       };
+
+      $scope.$on('$destroy', function() {
+        vm.metronome.isPlaying = false;
+        stopMetronomeLoop();
+        stopPracticeTimer();
+        activeTaskStartTime = null;
+      });
 
       // Initialize Application
       vm.loadState();
