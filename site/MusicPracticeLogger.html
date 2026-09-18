@@ -817,6 +817,7 @@
         if (vm.metronome.isPlaying) {
           startMetronomeLoop();
         }
+        vm.saveState();
       };
 
       vm.getBeatArray = function() {
@@ -898,6 +899,7 @@
         } else {
           activeTaskStartTime = Date.now();
         }
+        vm.saveState();
       };
 
       vm.stopActiveTask = function() {
@@ -1002,7 +1004,10 @@
 
       vm.resetAllSessionPrompt = function() {
         if (confirm("Reset all practice timers for today? Your piece list will be preserved.")) {
-          vm.stopActiveTask();
+          vm.activeTask = null;
+          vm.isPaused = false;
+          activeTaskStartTime = null;
+          stopPracticeTimer();
           vm.sessionTotalSeconds = 0;
           vm.sessionLogs = [];
           angular.forEach(vm.tasks, function(task) {
@@ -1110,7 +1115,9 @@
           sessionTotalSeconds: vm.sessionTotalSeconds,
           sessionLogs: vm.sessionLogs,
           activeTaskId: vm.activeTask ? vm.activeTask.id : null,
-          metronomeBpm: vm.metronome.bpm
+          isPaused: vm.isPaused,
+          metronomeBpm: vm.metronome.bpm,
+          metronomeTimeSignature: vm.metronome.timeSignature
         };
         $window.localStorage.setItem('practice_tempo_data', JSON.stringify(state));
       };
@@ -1124,12 +1131,16 @@
             vm.sessionTotalSeconds = data.sessionTotalSeconds || 0;
             vm.sessionLogs = data.sessionLogs || [];
             if (data.metronomeBpm) vm.metronome.bpm = data.metronomeBpm;
+            if (data.metronomeTimeSignature) vm.metronome.timeSignature = data.metronomeTimeSignature;
 
             if (data.activeTaskId) {
               var found = vm.tasks.find(function(t) { return t.id === data.activeTaskId; });
               if (found) {
                 vm.activeTask = found;
-                vm.isPaused = true; // start paused when loaded
+                vm.isPaused = typeof data.isPaused === 'boolean' ? data.isPaused : true;
+                if (!vm.isPaused) {
+                  startPracticeTimer();
+                }
               }
             }
           } catch (e) {
