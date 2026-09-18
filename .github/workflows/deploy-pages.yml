@@ -28,22 +28,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Prepare site artifact
-        shell: bash
-        run: |
-          mkdir -p dist
-          rsync -a \
-            --exclude='.git/' \
-            --exclude='.github/' \
-            --exclude='dist/' \
-            --exclude='README.md' \
-            ./ dist/
-          touch dist/.nojekyll
-
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
