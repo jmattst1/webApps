@@ -31,8 +31,26 @@ jobs:
       - name: Prepare site artifact
         run: |
           mkdir -p dist
-          cp index.html dist/index.html
-          cp MusicPracticeLogger.html dist/MusicPracticeLogger.html
+          while IFS= read -r file; do
+            mkdir -p "dist/$(dirname "$file")"
+            cp "$file" "dist/$file"
+          done < <(
+            git ls-files \
+              '*.html' \
+              '*.css' \
+              '*.js' \
+              '*.json' \
+              '*.png' \
+              '*.jpg' \
+              '*.jpeg' \
+              '*.gif' \
+              '*.svg' \
+              '*.webp' \
+              '*.ico' \
+              '*.txt' \
+              '*.xml' \
+              '*.webmanifest'
+          )
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
