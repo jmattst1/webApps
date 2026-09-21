@@ -1428,11 +1428,11 @@
           metronomeBpm: vm.metronome.bpm,
           metronomeSig: vm.metronome.timeSignature
         };
-        $window.localStorage.setItem('practice_tempo_v2_data', JSON.stringify(state));
+        $window.localStorage.setItem('practice_tempo_data', JSON.stringify(state));
       };
 
       vm.loadState = function() {
-        var saved = $window.localStorage.getItem('practice_tempo_v2_data');
+        var saved = $window.localStorage.getItem('practice_tempo_data');
         if (saved) {
           try {
             var data = JSON.parse(saved);
