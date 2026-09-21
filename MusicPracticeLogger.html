@@ -1,1188 +1,1408 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="practiceTempoApp">
+<html lang="en" ng-app="practiceApp">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PracticeTempo - Musician Practice Tracker</title>
-  
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome 6 Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- AngularJS 1.8.2 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.2/angular.min.js"></script>
-  <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PracticeTempo - Musician Practice Tracker</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --bg-dark: #111318;
-      --bg-card: #1a1d24;
-      --bg-card-hover: #222630;
-      --bg-card-active: #172a24;
-      --accent-cyan: #00f2fe;
-      --accent-green: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-purple: #a855f7;
-      --accent-rose: #f43f5e;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --border-color: #2e3440;
-    }
+    <style>
+        /* Essential ng-cloak rule preventing uncompiled template tags from displaying */
+        [ng-cloak] {
+            display: none !important;
+        }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      padding-bottom: 90px; /* Space for sticky playback bar on mobile */
-      user-select: none;
-      -webkit-user-select: none;
-    }
+        :root {
+            --pt-bg: #0f172a;
+            --pt-card: #1e293b;
+            --pt-card-hover: #334155;
+            --pt-border: #334155;
+            --pt-accent: #6366f1;
+            --pt-accent-hover: #4f46e5;
+            --pt-text: #f8fafc;
+            --pt-muted: #94a3b8;
+        }
 
-    /* High contrast text for music stand legibility */
-    .stand-text-lg {
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--pt-bg);
+            color: var(--pt-text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
 
-    .stand-text-xl {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
 
-    /* Custom Cards */
-    .tempo-card {
-      background-color: var(--bg-card);
-      border: 2px solid var(--border-color);
-      border-radius: 16px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
+        /* Glassmorphic Navbar */
+        .navbar-pt {
+            background-color: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--pt-border);
+        }
 
-    .tempo-card:hover {
-      background-color: var(--bg-card-hover);
-      transform: translateY(-2px);
-      border-color: #4b5563;
-    }
+        /* Card Styling */
+        .card-pt {
+            background-color: var(--pt-card);
+            border: 1px solid var(--pt-border);
+            border-radius: 1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
 
-    .tempo-card.active-playing {
-      background-color: var(--bg-card-active);
-      border-color: var(--accent-green);
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
-    }
+        .card-pt-interactive:hover {
+            border-color: #6366f1;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        }
 
-    /* Touch buttons minimum size for iPhone */
-    .btn-touch {
-      min-height: 48px;
-      padding: 10px 18px;
-      font-weight: 600;
-      border-radius: 12px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
+        /* Responsive Timer Banner */
+        .active-timer-banner {
+            background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);
+            border: 1px solid #4f46e5;
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
+            border-radius: 1.25rem;
+        }
 
-    .btn-touch-lg {
-      min-height: 56px;
-      font-size: 1.1rem;
-      border-radius: 14px;
-    }
+        /* Pulse animation for metronome beat */
+        @keyframes pulse-accent {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+            50% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
 
-    /* Category Badges */
-    .cat-badge {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 4px 10px;
-      border-radius: 20px;
-    }
+        .beat-active {
+            animation: pulse-accent 0.15s ease-out;
+            background-color: #818cf8 !important;
+            color: #ffffff !important;
+        }
 
-    .cat-warmup { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-    .cat-scales { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
-    .cat-repertoire { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
-    .cat-sightreading { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .cat-technique { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
+        /* Touch-friendly buttons for mobile iOS/Android */
+        .btn-touch {
+            min-height: 48px;
+            padding: 0.6rem 1.25rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
 
-    /* Equalizer Bar Animation */
-    .eq-container {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 20px;
-    }
+        /* Modal styling */
+        .modal-content-pt {
+            background-color: var(--pt-card);
+            color: var(--pt-text);
+            border: 1px solid var(--pt-border);
+            border-radius: 1.25rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
 
-    .eq-bar {
-      width: 4px;
-      background-color: var(--accent-green);
-      border-radius: 2px;
-      animation: eqBounce 1s infinite ease-in-out alternate;
-    }
+        .modal-header, .modal-footer {
+            border-color: var(--pt-border);
+        }
 
-    .eq-bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
-    .eq-bar:nth-child(2) { animation-delay: 0.4s; height: 100%; }
-    .eq-bar:nth-child(3) { animation-delay: 0.2s; height: 40%; }
-    .eq-bar:nth-child(4) { animation-delay: 0.5s; height: 80%; }
+        .form-control-pt, .form-select-pt {
+            background-color: #0f172a;
+            border: 1px solid var(--pt-border);
+            color: var(--pt-text);
+            border-radius: 0.6rem;
+            padding: 0.65rem 0.9rem;
+        }
 
-    @keyframes eqBounce {
-      0% { height: 20%; }
-      100% { height: 100%; }
-    }
+        .form-control-pt:focus, .form-select-pt:focus {
+            background-color: #0f172a;
+            border-color: #6366f1;
+            color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+        }
 
-    /* Metronome Beat Indicator Flashes */
-    .beat-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background-color: #374151;
-      transition: background-color 0.1s ease, transform 0.1s ease;
-    }
+        /* Category pills */
+        .badge-cat {
+            font-weight: 600;
+            padding: 0.35em 0.75em;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+        }
 
-    .beat-dot.active {
-      background-color: var(--accent-cyan);
-      box-shadow: 0 0 10px var(--accent-cyan);
-      transform: scale(1.25);
-    }
+        /* Table styling for Pivot view & Practice log */
+        .table-pt {
+            color: var(--pt-text);
+            border-color: var(--pt-border);
+        }
+        .table-pt th {
+            background-color: rgba(15, 23, 42, 0.6);
+            color: var(--pt-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        .table-pt td {
+            background-color: transparent;
+            vertical-align: middle;
+        }
 
-    .beat-dot.active-accent {
-      background-color: var(--accent-amber);
-      box-shadow: 0 0 12px var(--accent-amber);
-      transform: scale(1.35);
-    }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
 
-    /* Range slider custom styling */
-    .form-range::-webkit-slider-thumb {
-      background: var(--accent-cyan);
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-    }
-
-    /* Floating / Sticky Mobile Player */
-    .sticky-player-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(26, 29, 36, 0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-top: 1px solid var(--border-color);
-      z-index: 1050;
-      padding: 12px 16px;
-    }
-
-    /* Custom Dark Modal */
-    .modal-content-dark {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      border-radius: 20px;
-    }
-
-    .form-dark {
-      background-color: #121418;
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      border-radius: 10px;
-      padding: 12px;
-    }
-
-    .form-dark:focus {
-      background-color: #121418;
-      color: #fff;
-      border-color: var(--accent-cyan);
-      box-shadow: 0 0 0 0.25rem rgba(0, 242, 254, 0.15);
-    }
-
-    .progress {
-      background-color: #2d333f;
-      border-radius: 10px;
-      height: 8px;
-    }
-  </style>
+    <!-- AngularJS 1.8.3 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body ng-controller="PracticeController as vm">
-  <!-- Top App Navigation Header -->
-  <header class="navbar navbar-dark bg-dark border-bottom border-secondary px-3 py-2 sticky-top">
-    <div class="container-fluid d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fa-solid fa-music text-info fs-3"></i>
-        <div>
-          <h1 class="h4 mb-0 fw-bold text-white">PracticeTempo</h1>
-          <span class="small text-muted d-none d-sm-inline">Musician Studio Companion</span>
-        </div>
-      </div>
+<body ng-controller="PracticeController as vm" ng-cloak>
 
-      <!-- Live Session Time Counter -->
-      <div class="d-flex align-items-center gap-3">
-        <div class="text-end">
-          <div class="small text-muted uppercase tracking-wider fw-semibold">SESSION TIME</div>
-          <div class="font-monospace fw-bold fs-4 text-emerald" style="color: var(--accent-green)">
-            {{ vm.formatTime(vm.sessionTotalSeconds) }}
-          </div>
-        </div>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pt sticky-top">
+        <div class="container-fluid px-3 px-md-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <i class="fa-solid fa-metronome text-indigo-400 text-primary fs-4"></i>
+                <span class="fw-bold fs-4 tracking-tight">Practice<span class="text-indigo-400 text-primary">Tempo</span></span>
+            </a>
 
-        <!-- Quick Action Buttons -->
-        <button class="btn btn-outline-light btn-touch" ng-click="vm.toggleMetronomeDrawer()" title="Metronome">
-          <i class="fa-solid fa-metronome" ng-class="{'text-info': vm.metronome.isPlaying}"></i>
-          <span class="d-none d-md-inline">Metronome</span>
-        </button>
-
-        <button class="btn btn-info btn-touch text-dark fw-bold" ng-click="vm.openAddTaskModal()">
-          <i class="fa-solid fa-plus"></i>
-          <span class="d-none d-sm-inline">Add Piece</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Collapsible Metronome Drawer -->
-  <div class="bg-dark border-bottom border-secondary py-3 px-3" ng-show="vm.showMetronome">
-    <div class="container">
-      <div class="row align-items-center g-3">
-        <div class="col-12 col-md-4 d-flex align-items-center justify-content-between justify-content-md-start gap-3">
-          <!-- Play/Stop Metronome -->
-          <button class="btn btn-touch-lg px-4" 
-                  ng-class="vm.metronome.isPlaying ? 'btn-danger' : 'btn-success'" 
-                  ng-click="vm.toggleMetronome()">
-            <i class="fa-solid" ng-class="vm.metronome.isPlaying ? 'fa-square' : 'fa-play'"></i>
-            <span>{{ vm.metronome.isPlaying ? 'STOP' : 'START' }}</span>
-          </button>
-
-          <!-- BPM Display -->
-          <div class="text-center">
-            <span class="stand-text-xl font-monospace text-info">{{ vm.metronome.bpm }}</span>
-            <span class="small text-muted d-block">BPM</span>
-          </div>
-
-          <!-- Tap Tempo -->
-          <button class="btn btn-outline-secondary btn-touch px-3" ng-click="vm.tapTempo()" title="Tap rhythm to set tempo">
-            <i class="fa-solid fa-fingerprint"></i>
-            <span>TAP</span>
-          </button>
-        </div>
-
-        <!-- BPM Slider & Fine Adjustments -->
-        <div class="col-12 col-md-5">
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <button class="btn btn-sm btn-outline-secondary px-2" ng-click="vm.adjustBpm(-5)">-5</button>
-            <button class="btn btn-sm btn-outline-secondary px-2" ng-click="vm.adjustBpm(-1)">-1</button>
-            <input type="range" class="form-range flex-grow-1" min="30" max="250" ng-model="vm.metronome.bpm" ng-change="vm.updateMetronomeTempo()">
-            <button class="btn btn-sm btn-outline-secondary px-2" ng-click="vm.adjustBpm(1)">+1</button>
-            <button class="btn btn-sm btn-outline-secondary px-2" ng-click="vm.adjustBpm(5)">+5</button>
-          </div>
-
-          <!-- Tempo Presets -->
-          <div class="d-flex justify-content-between text-muted small">
-            <span class="badge bg-secondary cursor-pointer" ng-click="vm.setBpm(60)">Adagio (60)</span>
-            <span class="badge bg-secondary cursor-pointer" ng-click="vm.setBpm(84)">Andante (84)</span>
-            <span class="badge bg-secondary cursor-pointer" ng-click="vm.setBpm(108)">Moderato (108)</span>
-            <span class="badge bg-secondary cursor-pointer" ng-click="vm.setBpm(132)">Allegro (132)</span>
-            <span class="badge bg-secondary cursor-pointer" ng-click="vm.setBpm(168)">Presto (168)</span>
-          </div>
-        </div>
-
-        <!-- Time Signature & Visual Beats -->
-        <div class="col-12 col-md-3 d-flex flex-column align-items-md-end align-items-center">
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="small text-muted">Time Sig:</span>
-            <div class="btn-group btn-group-sm">
-              <button class="btn" ng-class="vm.metronome.timeSignature === 2 ? 'btn-info' : 'btn-outline-secondary'" ng-click="vm.setSignature(2)">2/4</button>
-              <button class="btn" ng-class="vm.metronome.timeSignature === 3 ? 'btn-info' : 'btn-outline-secondary'" ng-click="vm.setSignature(3)">3/4</button>
-              <button class="btn" ng-class="vm.metronome.timeSignature === 4 ? 'btn-info' : 'btn-outline-secondary'" ng-click="vm.setSignature(4)">4/4</button>
-              <button class="btn" ng-class="vm.metronome.timeSignature === 6 ? 'btn-info' : 'btn-outline-secondary'" ng-click="vm.setSignature(6)">6/8</button>
-            </div>
-          </div>
-
-          <!-- Beat Flashing Dots -->
-          <div class="d-flex gap-2 align-items-center">
-            <div ng-repeat="beat in vm.getBeatArray() track by $index" 
-                 class="beat-dot" 
-                 ng-class="{
-                   'active': vm.metronome.isPlaying && vm.metronome.currentBeat === $index,
-                   'active-accent': vm.metronome.isPlaying && vm.metronome.currentBeat === $index && $index === 0
-                 }">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <main class="container my-4">
-    <!-- Spotlight: Active Running Task Banner -->
-    <div class="card bg-dark border-success text-white mb-4 shadow-lg" ng-if="vm.activeTask">
-      <div class="card-body p-3 p-md-4">
-        <div class="row align-items-center g-3">
-          <div class="col-12 col-md-6">
-            <div class="d-flex align-items-center gap-2 mb-1">
-              <span class="badge bg-success text-dark fw-bold">NOW PLAYING</span>
-              <span class="cat-badge" ng-class="vm.getCategoryClass(vm.activeTask.category)">{{ vm.activeTask.category }}</span>
-              <div class="eq-container ms-2" ng-if="!vm.isPaused">
-                <div class="eq-bar"></div>
-                <div class="eq-bar"></div>
-                <div class="eq-bar"></div>
-                <div class="eq-bar"></div>
-              </div>
-            </div>
-            <h2 class="stand-text-lg mb-1 text-white">{{ vm.activeTask.title }}</h2>
-            <div class="text-info font-monospace fw-semibold fs-5 mb-1" ng-if="vm.activeTask.bars">
-              <i class="fa-solid fa-bookmark me-1"></i> {{ vm.activeTask.bars }}
-            </div>
-            <p class="text-muted small mb-0" ng-if="vm.activeTask.notes">
-              <i class="fa-solid fa-lightbulb text-warning me-1"></i> Focus: {{ vm.activeTask.notes }}
-            </p>
-          </div>
-
-          <!-- Live Timer & Play Controls -->
-          <div class="col-12 col-md-6 text-md-end">
-            <div class="d-flex align-items-center justify-content-md-end justify-content-between gap-3 mb-2">
-              <div>
-                <div class="small text-muted">TASK TIME</div>
-                <div class="stand-text-xl font-monospace text-emerald" style="color: var(--accent-green)">
-                  {{ vm.formatTime(vm.activeTask.secondsSpent) }}
-                </div>
-              </div>
-              <div class="text-end">
-                <div class="small text-muted">PLANNED</div>
-                <div class="stand-text-lg font-monospace text-muted">
-                  {{ vm.activeTask.plannedMinutes }}m
-                </div>
-              </div>
-            </div>
-
-            <div class="d-flex gap-2 justify-content-md-end">
-              <button class="btn btn-touch" ng-class="vm.isPaused ? 'btn-success' : 'btn-warning'" ng-click="vm.togglePauseTask()">
-                <i class="fa-solid" ng-class="vm.isPaused ? 'fa-play' : 'fa-pause'"></i>
-                <span>{{ vm.isPaused ? 'Resume' : 'Pause' }}</span>
-              </button>
-
-              <button class="btn btn-outline-light btn-touch" ng-click="vm.stopActiveTask()">
-                <i class="fa-solid fa-stop"></i>
-                <span>Stop</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Progress Bar for Active Task -->
-        <div class="mt-3">
-          <div class="d-flex justify-content-between small text-muted mb-1">
-            <span>Progress towards goal</span>
-            <span>{{ vm.getTaskProgressPercent(vm.activeTask) }}%</span>
-          </div>
-          <div class="progress" style="height: 10px;">
-            <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" 
-                 role="progressbar" 
-                 ng-style="{'width': vm.getTaskProgressPercent(vm.activeTask) + '%'}">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filter Tabs & Summary Row -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-      <!-- Category Filter Pills -->
-      <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-sm btn-touch" 
-                ng-class="vm.selectedCategory === 'All' ? 'btn-light' : 'btn-outline-secondary'"
-                ng-click="vm.filterCategory('All')">
-          All ({{ vm.tasks.length }})
-        </button>
-        <button class="btn btn-sm btn-touch" 
-                ng-class="vm.selectedCategory === cat ? 'btn-light' : 'btn-outline-secondary'"
-                ng-repeat="cat in vm.categories"
-                ng-click="vm.filterCategory(cat)">
-          {{ cat }}
-        </button>
-      </div>
-
-      <!-- Quick Action Controls -->
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-secondary btn-sm" ng-click="vm.openStatsModal()" title="View Practice Analytics">
-          <i class="fa-solid fa-chart-pie me-1"></i> Analytics
-        </button>
-        <button class="btn btn-outline-danger btn-sm" ng-click="vm.resetAllSessionPrompt()" title="Reset Session Timers">
-          <i class="fa-solid fa-rotate-left me-1"></i> Reset Times
-        </button>
-      </div>
-    </div>
-
-    <!-- Instructions banner if no running task -->
-    <div class="alert alert-dark border-secondary d-flex align-items-center gap-3 mb-4" ng-if="!vm.activeTask">
-      <i class="fa-solid fa-hand-pointer text-info fs-3"></i>
-      <div>
-        <strong class="text-white">One-Tap Practice Switcher:</strong> Tap any piece card below to immediately start timing that item. Tapping a new piece automatically stops and logs the previous one.
-      </div>
-    </div>
-
-    <!-- Task Cards Grid -->
-    <div class="row g-3">
-      <div class="col-12 col-md-6 col-lg-4" ng-repeat="task in vm.filteredTasks = (vm.tasks | filter:vm.categoryFilter) track by task.id">
-        <div class="tempo-card p-3 h-100 d-flex flex-column justify-content-between" 
-             ng-class="{'active-playing': vm.activeTask.id === task.id}"
-             ng-click="vm.selectTask(task)">
-          
-          <div>
-            <!-- Card Header: Category & Action Buttons -->
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="cat-badge" ng-class="vm.getCategoryClass(task.category)">{{ task.category }}</span>
-              
-              <div class="d-flex gap-1" ng-click="$event.stopPropagation()">
-                <button class="btn btn-link text-muted p-1" ng-click="vm.openEditTaskModal(task)" title="Edit Piece">
-                  <i class="fa-solid fa-pen-to-square"></i>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <!-- Screen Wake Lock Toggle Button -->
+                <button class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-2" 
+                        ng-click="vm.toggleWakeLock()"
+                        title="Prevent screen from turning off during practice">
+                    <i class="fa-solid" ng-class="vm.wakeLockActive ? 'fa-sun text-warning' : 'fa-moon'"></i>
+                    <span class="d-none d-sm-inline" ng-bind="vm.wakeLockActive ? 'Wake Lock ON' : 'Wake Lock OFF'"></span>
                 </button>
-                <button class="btn btn-link text-danger p-1" ng-click="vm.deleteTask(task.id)" title="Delete Piece">
-                  <i class="fa-solid fa-trash"></i>
+
+                <!-- Settings / Data Export Backup -->
+                <button class="btn btn-outline-light btn-sm rounded-pill" ng-click="vm.openBackupModal()">
+                    <i class="fa-solid fa-arrows-rotate me-1"></i> Data & Backup
                 </button>
-              </div>
             </div>
-
-            <!-- Piece Name & Measure Range -->
-            <h3 class="stand-text-lg text-white mb-1">{{ task.title }}</h3>
-            
-            <div class="text-info font-monospace fw-semibold mb-2" ng-if="task.bars">
-              <i class="fa-solid fa-bookmark me-1"></i> {{ task.bars }}
-            </div>
-
-            <!-- Technique / Goal Notes -->
-            <p class="text-muted small mb-3 text-truncate-2" ng-if="task.notes">
-              <i class="fa-solid fa-bullseye text-warning me-1"></i> {{ task.notes }}
-            </p>
-          </div>
-
-          <!-- Card Bottom: Elapsed Time, Target & Tap Action -->
-          <div>
-            <!-- Target vs Spent Info -->
-            <div class="d-flex justify-content-between align-items-end mb-2">
-              <div>
-                <span class="small text-muted d-block">Time Spent</span>
-                <span class="font-monospace fw-bold fs-5 text-white">
-                  {{ vm.formatTime(task.secondsSpent) }}
-                </span>
-              </div>
-              <div class="text-end">
-                <span class="small text-muted d-block">Goal</span>
-                <span class="font-monospace fw-semibold text-muted">
-                  {{ task.plannedMinutes }} min
-                </span>
-              </div>
-            </div>
-
-            <!-- Goal Progress Bar -->
-            <div class="progress mb-3">
-              <div class="progress-bar" 
-                   role="progressbar" 
-                   ng-class="vm.getProgressColorClass(vm.getTaskProgressPercent(task))"
-                   ng-style="{'width': vm.getTaskProgressPercent(task) + '%'}">
-              </div>
-            </div>
-
-            <!-- Big Touch Tap Indicator Button -->
-            <button class="btn btn-touch w-full w-100" 
-                    ng-class="vm.activeTask.id === task.id ? 'btn-success fw-bold' : 'btn-outline-info'">
-              <i class="fa-solid" ng-class="vm.activeTask.id === task.id ? (vm.isPaused ? 'fa-play' : 'fa-volume-high') : 'fa-play'"></i>
-              <span>
-                <span ng-if="vm.activeTask.id === task.id">
-                  {{ vm.isPaused ? 'PAUSED - TAP TO RESUME' : 'NOW PLAYING' }}
-                </span>
-                <span ng-if="vm.activeTask.id !== task.id">
-                  TAP TO START
-                </span>
-              </span>
-            </button>
-          </div>
-
         </div>
-      </div>
+    </nav>
 
-      <!-- Empty State -->
-      <div class="col-12 text-center py-5" ng-if="vm.filteredTasks.length === 0">
-        <i class="fa-solid fa-music text-muted fs-1 mb-3"></i>
-        <h3 class="h5 text-muted">No pieces found in this category</h3>
-        <button class="btn btn-info btn-touch text-dark mt-2" ng-click="vm.openAddTaskModal()">
-          <i class="fa-solid fa-plus"></i> Add New Piece
-        </button>
-      </div>
+    <main class="container-fluid px-3 px-md-4 py-4">
+
+        <!-- Active Timer Display Banner -->
+        <div class="row mb-4" ng-if="vm.activeTask">
+            <div class="col-12">
+                <div class="active-timer-banner p-4 text-white">
+                    <div class="row align-items-center g-3">
+                        <div class="col-lg-6">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge badge-cat" ng-style="{'background-color': vm.activeCategory.color}" ng-bind="vm.activeCategory.name"></span>
+                                <span class="text-white-50 text-sm" ng-bind="vm.activePiece.composer"></span>
+                            </div>
+                            <h2 class="fw-bold mb-1" ng-bind="vm.activePiece.title"></h2>
+                            <p class="text-indigo-200 mb-0 d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-list-check"></i>
+                                Task: <strong ng-bind="vm.activeTask.title"></strong>
+                            </p>
+                        </div>
+
+                        <!-- Timer Clock & Control Buttons -->
+                        <div class="col-lg-6 text-lg-end">
+                            <div class="mono display-3 fw-bold tracking-wider mb-2" ng-bind="vm.formatDuration(vm.currentElapsedSeconds)">00:00:00</div>
+                            <div class="d-flex flex-wrap align-items-center justify-content-lg-end gap-2">
+                                <button class="btn btn-lg btn-touch" ng-class="vm.timerRunning ? 'btn-warning' : 'btn-success'" ng-click="vm.toggleTimer()">
+                                    <i class="fa-solid" ng-class="vm.timerRunning ? 'fa-pause' : 'fa-play'"></i>
+                                    <span ng-bind="vm.timerRunning ? 'Pause' : 'Resume'"></span>
+                                </button>
+                                <button class="btn btn-lg btn-danger btn-touch" ng-click="vm.stopAndSaveSession()">
+                                    <i class="fa-solid fa-square"></i> Save Session
+                                </button>
+                                <button class="btn btn-lg btn-outline-light btn-touch" ng-click="vm.cancelTimer()">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-pills mb-4 gap-2 border-bottom border-secondary pb-3" id="mainTabs">
+            <li class="nav-item">
+                <button class="nav-link text-white btn-touch" ng-class="{'active bg-primary': vm.currentTab === 'practice'}" ng-click="vm.switchTab('practice')">
+                    <i class="fa-solid fa-compact-disc"></i> Practice Dashboard
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link text-white btn-touch" ng-class="{'active bg-primary': vm.currentTab === 'metronome'}" ng-click="vm.switchTab('metronome')">
+                    <i class="fa-solid fa-sliders"></i> Metronome
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link text-white btn-touch" ng-class="{'active bg-primary': vm.currentTab === 'logs'}" ng-click="vm.switchTab('logs')">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Practice History
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link text-white btn-touch" ng-class="{'active bg-primary': vm.currentTab === 'analytics'}" ng-click="vm.switchTab('analytics')">
+                    <i class="fa-solid fa-chart-pivot"></i> Analytics & Pivot
+                </button>
+            </li>
+        </ul>
+
+        <section ng-show="vm.currentTab === 'practice'">
+            <div class="row g-4">
+                <!-- Left Column: Quick Stats & Category Filters -->
+                <div class="col-lg-3">
+                    <div class="card card-pt p-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-uppercase text-muted mb-0"><i class="fa-solid fa-tags me-1"></i> Categories</h6>
+                            <button class="btn btn-sm btn-outline-primary rounded-circle" ng-click="vm.openCategoryModal()" title="Add Category">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex flex-column gap-2">
+                            <button class="btn btn-sm text-start d-flex justify-content-between align-items-center"
+                                    ng-class="vm.selectedCategoryFilter === null ? 'btn-primary' : 'btn-outline-secondary text-white'"
+                                    ng-click="vm.selectedCategoryFilter = null">
+                                <span><i class="fa-solid fa-layer-group me-2"></i> All Categories</span>
+                                <span class="badge bg-dark rounded-pill" ng-bind="vm.pieces.length"></span>
+                            </button>
+                            <div ng-repeat="cat in vm.categories" class="d-flex align-items-center gap-1">
+                                <button class="btn btn-sm text-start flex-grow-1 d-flex justify-content-between align-items-center"
+                                        ng-class="vm.selectedCategoryFilter === cat.id ? 'btn-primary' : 'btn-outline-secondary text-white'"
+                                        ng-click="vm.selectedCategoryFilter = cat.id">
+                                    <span>
+                                        <i class="fa-solid me-2" ng-class="cat.icon || 'fa-folder'" ng-style="{'color': cat.color}"></i>
+                                        <span ng-bind="cat.name"></span>
+                                    </span>
+                                    <span class="badge bg-dark rounded-pill" ng-bind="vm.getPieceCountForCategory(cat.id)"></span>
+                                </button>
+                                <button class="btn btn-sm text-muted" ng-click="vm.openCategoryModal(cat)" title="Edit Category">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Daily Summary Widget -->
+                    <div class="card card-pt p-3">
+                        <h6 class="fw-bold text-uppercase text-muted mb-3"><i class="fa-solid fa-calendar-day me-1"></i> Today's Summary</h6>
+                        <div class="text-center py-2">
+                            <div class="mono h2 fw-bold text-indigo-400 text-primary mb-1" ng-bind="vm.formatDuration(vm.getTodayTotalSeconds())">00:00:00</div>
+                            <p class="text-muted small mb-0">Total Time Practiced Today</p>
+                        </div>
+                        <hr class="border-secondary">
+                        <div class="d-flex justify-content-between text-sm">
+                            <span class="text-muted">Sessions Completed:</span>
+                            <strong ng-bind="vm.getTodaySessionCount()">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Piece List & Interactive Task Switcher -->
+                <div class="col-lg-9">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0">Repertoire & Tasks</h4>
+                        <button class="btn btn-primary btn-touch" ng-click="vm.openPieceModal()">
+                            <i class="fa-solid fa-plus me-1"></i> Add New Piece
+                        </button>
+                    </div>
+
+                    <!-- Pieces Cards Loop -->
+                    <div class="d-flex flex-column gap-3">
+                        <div ng-repeat="piece in vm.filteredPieces = (vm.pieces | filter: vm.pieceCategoryFilter)" 
+                             class="card card-pt card-pt-interactive p-4">
+                            
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge badge-cat" 
+                                              ng-style="{'background-color': vm.getCategory(piece.categoryId).color}"
+                                              ng-bind="vm.getCategory(piece.categoryId).name"></span>
+                                        <span class="text-muted small" ng-bind="piece.composer"></span>
+                                    </div>
+                                    <h4 class="fw-bold mb-1" ng-bind="piece.title"></h4>
+                                    <p class="text-muted small mb-0" ng-if="piece.targetBars">
+                                        <i class="fa-solid fa-music me-1"></i> Target Bars: <span ng-bind="piece.targetBars"></span>
+                                    </p>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-sm btn-outline-light" ng-click="vm.openPieceModal(piece)" title="Edit Piece">
+                                        <i class="fa-solid fa-pen"></i> Edit Piece
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" ng-click="vm.confirmDeletePiece(piece)" title="Delete Piece">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Expandable Checklist / Task Switcher -->
+                            <div class="border-top border-secondary pt-3 mt-2">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold text-muted text-uppercase text-xs">Practice Tasks / Focus Areas</span>
+                                    <button class="btn btn-link btn-sm text-decoration-none text-indigo-400 p-0" ng-click="vm.addNewTaskToPiece(piece)">
+                                        <i class="fa-solid fa-plus"></i> Add Focus Task
+                                    </button>
+                                </div>
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div ng-repeat="task in piece.tasks" class="d-flex align-items-center justify-content-between p-2 rounded bg-dark border border-secondary">
+                                        <div class="d-flex align-items-center gap-2 flex-grow-1 me-2">
+                                            <input type="checkbox" class="form-check-input mt-0" ng-model="task.completed" ng-change="vm.saveData()">
+                                            <input type="text" class="form-control form-control-sm bg-transparent text-white border-0" 
+                                                   ng-model="task.title" ng-blur="vm.saveData()" placeholder="Task title...">
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted text-xs d-none d-md-inline" ng-if="task.barsWorked">
+                                                Bars <span ng-bind="task.barsWorked"></span>
+                                            </span>
+                                            <!-- One-Tap Start / Switch Task Timer Button -->
+                                            <button class="btn btn-sm btn-touch" 
+                                                    ng-class="(vm.activeTask && vm.activeTask.id === task.id) ? 'btn-success' : 'btn-outline-primary'"
+                                                    ng-click="vm.selectAndStartTask(piece, task)">
+                                                <i class="fa-solid" ng-class="(vm.activeTask && vm.activeTask.id === task.id) ? 'fa-spinner fa-spin' : 'fa-play'"></i>
+                                                <span ng-bind="(vm.activeTask && vm.activeTask.id === task.id) ? 'Active' : 'Start'"></span>
+                                            </button>
+                                            <button class="btn btn-sm text-danger px-1" ng-click="vm.removeTaskFromPiece(piece, $index)" title="Remove task">
+                                                <i class="fa-solid fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div ng-if="vm.filteredPieces.length === 0" class="card card-pt p-5 text-center text-muted">
+                            <i class="fa-solid fa-music fs-1 mb-3 text-secondary"></i>
+                            <p class="mb-0">No pieces found in this category. Click "Add New Piece" above to begin!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section ng-show="vm.currentTab === 'metronome'">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-xl-6">
+                    <div class="card card-pt p-4 p-md-5 text-center">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0"><i class="fa-solid fa-metronome me-2 text-primary"></i> Integrated Metronome</h4>
+                            <span class="badge bg-secondary" ng-bind="vm.metronomeRunning ? 'Playing' : 'Stopped'"></span>
+                        </div>
+
+                        <!-- Visual Beat Pulse Display -->
+                        <div class="d-flex justify-content-center align-items-center gap-3 my-4">
+                            <div ng-repeat="b in vm.getBeatArray() track by $index" 
+                                 class="rounded-circle border border-secondary d-flex align-items-center justify-content-center font-bold"
+                                 ng-class="{'beat-active': vm.currentBeat === $index, 'bg-primary text-white': $index === 0 && vm.currentBeat === 0}"
+                                 style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                <span ng-bind="$index + 1"></span>
+                            </div>
+                        </div>
+
+                        <!-- BPM Display & Slider -->
+                        <div class="my-4">
+                            <div class="mono display-1 fw-bold text-indigo-400 text-primary mb-2" ng-bind="vm.metronomeBpm">120</div>
+                            <p class="text-muted text-uppercase tracking-widest fw-semibold">Beats Per Minute</p>
+                            
+                            <div class="d-flex align-items-center justify-content-center gap-3 mt-3">
+                                <button class="btn btn-outline-secondary rounded-circle" ng-click="vm.adjustBpm(-5)">-5</button>
+                                <button class="btn btn-outline-secondary rounded-circle" ng-click="vm.adjustBpm(-1)">-1</button>
+                                <input type="range" class="form-range mx-2" min="30" max="280" ng-model="vm.metronomeBpm" ng-change="vm.updateMetronomeTempo()">
+                                <button class="btn btn-outline-secondary rounded-circle" ng-click="vm.adjustBpm(1)">+1</button>
+                                <button class="btn btn-outline-secondary rounded-circle" ng-click="vm.adjustBpm(5)">+5</button>
+                            </div>
+                        </div>
+
+                        <!-- Metronome Settings Grid -->
+                        <div class="row g-3 my-3 text-start bg-dark p-3 rounded-3 border border-secondary">
+                            <div class="col-6">
+                                <label class="form-label text-muted small">Beats / Measure</label>
+                                <select class="form-select form-select-pt" ng-model="vm.beatsPerMeasure" ng-change="vm.updateMetronomeTempo()">
+                                    <option ng-value="2">2 Beats</option>
+                                    <option ng-value="3">3 Beats</option>
+                                    <option ng-value="4">4 Beats (Standard)</option>
+                                    <option ng-value="6">6 Beats</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-muted small">Pitch Accent</label>
+                                <select class="form-select form-select-pt" ng-model="vm.accentFirstBeat">
+                                    <option ng-value="true">Accent Beat 1 (High Tone)</option>
+                                    <option ng-value="false">Uniform Tone</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Metronome Play / Pause Button -->
+                        <div class="d-grid mt-4">
+                            <button class="btn btn-lg btn-touch" ng-class="vm.metronomeRunning ? 'btn-danger' : 'btn-primary'" ng-click="vm.toggleMetronome()">
+                                <i class="fa-solid" ng-class="vm.metronomeRunning ? 'fa-stop' : 'fa-play'"></i>
+                                <span ng-bind="vm.metronomeRunning ? 'Stop Metronome' : 'Start Metronome'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section ng-show="vm.currentTab === 'logs'">
+            <div class="card card-pt p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h4 class="fw-bold mb-0">Practice Sessions History</h4>
+                    <button class="btn btn-sm btn-outline-primary" ng-click="vm.openAddManualLogModal()">
+                        <i class="fa-solid fa-plus me-1"></i> Retroactive Manual Log Entry
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-pt align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Piece / Task</th>
+                                <th>Category</th>
+                                <th>Duration</th>
+                                <th>Bars Worked</th>
+                                <th>BPM Range</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="log in vm.logs | orderBy:'-startTime'">
+                                <td>
+                                    <div class="fw-semibold" ng-bind="log.date"></div>
+                                    <div class="text-muted text-xs mono" ng-bind="log.timeFormatted"></div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold" ng-bind="log.pieceTitle"></div>
+                                    <div class="text-muted small" ng-bind="log.taskTitle || 'General Practice'"></div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-cat" ng-style="{'background-color': log.categoryColor}" ng-bind="log.categoryName"></span>
+                                </td>
+                                <td class="mono fw-bold" ng-bind="vm.formatDuration(log.durationSeconds)"></td>
+                                <td ng-bind="log.barsWorked || '-'"></td>
+                                <td class="mono">
+                                    <span ng-if="log.minBpm && log.maxBpm" ng-bind="log.minBpm + ' - ' + log.maxBpm + ' BPM'"></span>
+                                    <span ng-if="!log.minBpm" class="text-muted">-</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-light me-1" ng-click="vm.openEditLogModal(log)" title="Edit Entry">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" ng-click="vm.confirmDeleteLog(log)" title="Delete Entry">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr ng-if="vm.logs.length === 0">
+                                <td colspan="7" class="text-center py-4 text-muted">No practice logs available yet. Start practicing above!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section ng-show="vm.currentTab === 'analytics'">
+            <div class="row g-4">
+                <!-- Chart 1: Practice Time Trend -->
+                <div class="col-lg-8">
+                    <div class="card card-pt p-4 h-100">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-line text-primary me-2"></i> Practice Time Trend (Minutes)</h5>
+                        <div style="position: relative; min-height: 280px;">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Category Breakdown -->
+                <div class="col-lg-4">
+                    <div class="card card-pt p-4 h-100">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie text-indigo-400 text-primary me-2"></i> Category Distribution</h5>
+                        <div style="position: relative; min-height: 280px;" class="d-flex align-items-center justify-content-center">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Pivot Table Analytics Widget -->
+                <div class="col-12">
+                    <div class="card card-pt p-4">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-table-cells me-2 text-indigo-400 text-primary"></i> Interactive Practice Pivot Table</h5>
+                        
+                        <div class="row g-3 mb-4 bg-dark p-3 rounded border border-secondary">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Row Grouping</label>
+                                <select class="form-select form-select-pt" ng-model="vm.pivotRowKey" ng-change="vm.rebuildPivotTable()">
+                                    <option value="pieceTitle">Piece Title</option>
+                                    <option value="categoryName">Category</option>
+                                    <option value="date">Date</option>
+                                    <option value="month">Month</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Column Metric / Grouping</label>
+                                <select class="form-select form-select-pt" ng-model="vm.pivotColKey" ng-change="vm.rebuildPivotTable()">
+                                    <option value="categoryName">Category</option>
+                                    <option value="month">Month</option>
+                                    <option value="totalOnly">Total Time Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Rendered Pivot Table -->
+                        <div class="table-responsive">
+                            <table class="table table-pt table-bordered text-center align-middle">
+                                <thead>
+                                    <tr>
+                                        <th class="text-start" ng-bind="vm.pivotRowKey | uppercase"></th>
+                                        <th ng-repeat="col in vm.pivotData.columns" ng-bind="col"></th>
+                                        <th class="table-active">Total Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="row in vm.pivotData.rows">
+                                        <td class="text-start fw-bold" ng-bind="row.name"></td>
+                                        <td ng-repeat="col in vm.pivotData.columns" class="mono" ng-bind="vm.formatDuration(row.cols[col] || 0)"></td>
+                                        <td class="table-active mono fw-bold text-primary" ng-bind="vm.formatDuration(row.totalSeconds)"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- MODAL 1: CONFIRMATION MODAL (FIXTURE FOR THE RAW TEMPLATE BUG) -->
+    <!-- Notice ng-bind="vm.confirmTitle || 'Confirm Action'" which prevents any raw curly braces from rendering -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-pt">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" ng-bind="vm.confirmTitle || 'Confirm Action'"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0" ng-bind="vm.confirmMessage || 'Are you sure you want to perform this action?'"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" ng-click="vm.executeConfirmAction()" data-bs-dismiss="modal">Confirm</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </main>
 
-  <!-- Floating Sticky Bottom Bar for Mobile (iPhone Optimization) -->
-  <div class="sticky-player-bar d-md-none" ng-if="vm.activeTask">
-    <div class="d-flex align-items-center justify-content-between gap-2">
-      <div class="text-truncate flex-grow-1" ng-click="vm.scrollToActiveTask()">
-        <div class="small text-success fw-bold text-uppercase d-flex align-items-center gap-1">
-          <span class="spinner-grow spinner-grow-sm text-success" role="status" ng-if="!vm.isPaused"></span>
-          {{ vm.isPaused ? 'PAUSED' : 'NOW PLAYING' }}
+    <!-- MODAL 2: ADD / EDIT PIECE MODAL -->
+    <div class="modal fade" id="pieceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-pt">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" ng-bind="vm.editingPiece.id ? 'Edit Repertoire Piece' : 'Add New Piece'"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form ng-submit="vm.savePieceForm()">
+                    <div class="modal-body d-flex flex-column gap-3">
+                        <div>
+                            <label class="form-label text-muted small">Piece Title *</label>
+                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.title" required placeholder="e.g. Moonlight Sonata">
+                        </div>
+                        <div>
+                            <label class="form-label text-muted small">Composer / Artist</label>
+                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.composer" placeholder="e.g. Ludwig van Beethoven">
+                        </div>
+                        <div>
+                            <label class="form-label text-muted small">Category *</label>
+                            <select class="form-select form-select-pt" ng-model="vm.editingPiece.categoryId" required>
+                                <option ng-repeat="cat in vm.categories" ng-value="cat.id" ng-bind="cat.name"></option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label text-muted small">Target Bars / Measures</label>
+                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.targetBars" placeholder="e.g. mm. 1-32 or Full Piece">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Piece</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="fw-bold text-white text-truncate">{{ vm.activeTask.title }}</div>
-      </div>
-
-      <div class="font-monospace fw-bold fs-4 text-emerald me-2" style="color: var(--accent-green)">
-        {{ vm.formatTime(vm.activeTask.secondsSpent) }}
-      </div>
-
-      <button class="btn btn-touch" ng-class="vm.isPaused ? 'btn-success' : 'btn-warning'" ng-click="vm.togglePauseTask()">
-        <i class="fa-solid" ng-class="vm.isPaused ? 'fa-play' : 'fa-pause'"></i>
-      </button>
     </div>
-  </div>
 
-  <!-- Modal: Add / Edit Piece -->
-  <div class="modal fade" id="taskModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content modal-content-dark">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title fw-bold text-white">
-            <i class="fa-solid text-info me-2" ng-class="vm.editingTask.id ? 'fa-pen-to-square' : 'fa-plus-circle'"></i>
-            {{ vm.editingTask.id ? 'Edit Practice Piece' : 'Add New Practice Piece' }}
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- MODAL 3: CATEGORY EDIT MODAL -->
+    <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-pt">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" ng-bind="vm.editingCategory.id ? 'Edit Category' : 'New Category'"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form ng-submit="vm.saveCategoryForm()">
+                    <div class="modal-body d-flex flex-column gap-3">
+                        <div>
+                            <label class="form-label text-muted small">Category Name</label>
+                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingCategory.name" required placeholder="Category Name">
+                        </div>
+                        <div>
+                            <label class="form-label text-muted small">Badge Color</label>
+                            <input type="color" class="form-control form-control-color w-100 bg-dark" ng-model="vm.editingCategory.color">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Category</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <form ng-submit="vm.saveTask()">
-          <div class="modal-body">
-            <!-- Piece Title -->
-            <div class="mb-3">
-              <label class="form-label small text-muted fw-bold">PIECE / WORK NAME *</label>
-              <input type="text" class="form-control form-dark" ng-model="vm.editingTask.title" placeholder="e.g. Chopin Nocturne Op. 9 No. 2" required>
-            </div>
-
-            <!-- Measure / Bar Range -->
-            <div class="mb-3">
-              <label class="form-label small text-muted fw-bold">BAR / MEASURE FOCUS</label>
-              <input type="text" class="form-control form-dark" ng-model="vm.editingTask.bars" placeholder="e.g. m. 14-28 or Full Piece">
-            </div>
-
-            <div class="row g-3 mb-3">
-              <!-- Category -->
-              <div class="col-6">
-                <label class="form-label small text-muted fw-bold">CATEGORY</label>
-                <select class="form-select form-dark" ng-model="vm.editingTask.category">
-                  <option ng-repeat="cat in vm.categories" value="{{cat}}">{{cat}}</option>
-                </select>
-              </div>
-
-              <!-- Planned Duration -->
-              <div class="col-6">
-                <label class="form-label small text-muted fw-bold">PLANNED TIME (MINS)</label>
-                <input type="number" class="form-control form-dark" ng-model="vm.editingTask.plannedMinutes" min="1" max="180" required>
-              </div>
-            </div>
-
-            <!-- Focus Notes -->
-            <div class="mb-3">
-              <label class="form-label small text-muted fw-bold">TECHNIQUE & FOCUS GOALS</label>
-              <textarea class="form-control form-dark" ng-model="vm.editingTask.notes" rows="3" placeholder="e.g. Trill clarity, slow hands together, steady tempo..."></textarea>
-            </div>
-          </div>
-
-          <div class="modal-footer border-secondary">
-            <button type="button" class="btn btn-outline-secondary btn-touch" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-info btn-touch text-dark fw-bold">Save Piece</button>
-          </div>
-        </form>
-      </div>
     </div>
-  </div>
 
-  <!-- Modal: Session Analytics & History -->
-  <div class="modal fade" id="statsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content modal-content-dark">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title fw-bold text-white">
-            <i class="fa-solid fa-chart-pie text-info me-2"></i> Practice Session Analytics
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- MODAL 4: EDIT PRACTICE LOG MODAL -->
+    <div class="modal fade" id="logModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-pt">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" ng-bind="vm.editingLog.id ? 'Edit Practice Entry' : 'Manual Log Entry'"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form ng-submit="vm.saveLogForm()">
+                    <div class="modal-body d-flex flex-column gap-3">
+                        <div>
+                            <label class="form-label text-muted small">Piece Title</label>
+                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingLog.pieceTitle" required>
+                        </div>
+                        <div>
+                            <label class="form-label text-muted small">Date</label>
+                            <input type="date" class="form-control form-control-pt" ng-model="vm.editingLog.date" required>
+                        </div>
+                        <div>
+                            <label class="form-label text-muted small">Duration (Minutes)</label>
+                            <input type="number" class="form-control form-control-pt" ng-model="vm.editingLog.durationMinutes" min="1" required>
+                        </div>
+                        <div>
+                            <label class="form-label text-muted small">Bars Worked</label>
+                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingLog.barsWorked" placeholder="e.g. mm 12-24">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Log</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div class="modal-body">
-          <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3 text-center p-3 rounded-3" style="background: rgba(255,255,255,0.05);">
-              <div class="small text-muted">Total Time Today</div>
-              <div class="stand-text-lg font-monospace text-emerald" style="color: var(--accent-green)">
-                {{ vm.formatTime(vm.sessionTotalSeconds) }}
-              </div>
-            </div>
-            <div class="col-6 col-md-3 text-center p-3 rounded-3" style="background: rgba(255,255,255,0.05);">
-              <div class="small text-muted">Planned Total</div>
-              <div class="stand-text-lg font-monospace text-info">
-                {{ vm.getTotalPlannedMinutes() }} mins
-              </div>
-            </div>
-            <div class="col-6 col-md-3 text-center p-3 rounded-3" style="background: rgba(255,255,255,0.05);">
-              <div class="small text-muted">Pieces Practiced</div>
-              <div class="stand-text-lg font-monospace text-warning">
-                {{ vm.getPracticedPiecesCount() }} / {{ vm.tasks.length }}
-              </div>
-            </div>
-            <div class="col-6 col-md-3 text-center p-3 rounded-3" style="background: rgba(255,255,255,0.05);">
-              <div class="small text-muted">Overall Goal Completion</div>
-              <div class="stand-text-lg font-monospace text-purple" style="color: var(--accent-purple)">
-                {{ vm.getOverallCompletionPercent() }}%
-              </div>
-            </div>
-          </div>
-
-          <!-- Category Breakdown Progress Bars -->
-          <h6 class="fw-bold text-white mb-3">Time Spent by Category</h6>
-          <div class="mb-3" ng-repeat="cat in vm.categories">
-            <div class="d-flex justify-content-between small text-muted mb-1">
-              <span>{{ cat }}</span>
-              <span>{{ vm.formatTime(vm.getCategoryTimeSpent(cat)) }}</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" 
-                   ng-class="vm.getCategoryBgClass(cat)"
-                   ng-style="{'width': vm.getCategoryTimePercent(cat) + '%'}">
-              </div>
-            </div>
-          </div>
-
-          <!-- Session Log History -->
-          <h6 class="fw-bold text-white mt-4 mb-2">Practice Switches History</h6>
-          <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
-            <table class="table table-dark table-sm small align-middle">
-              <thead>
-                <tr class="text-muted">
-                  <th>Time</th>
-                  <th>Piece</th>
-                  <th>Measure Focus</th>
-                  <th>Duration</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="log in vm.sessionLogs | orderBy:'-timestamp'">
-                  <td class="text-muted">{{ log.timestamp | date:'HH:mm:ss' }}</td>
-                  <td class="fw-semibold text-white">{{ log.title }}</td>
-                  <td class="text-info">{{ log.bars || '-' }}</td>
-                  <td class="font-monospace text-emerald" style="color: var(--accent-green)">{{ vm.formatTime(log.durationSeconds) }}</td>
-                </tr>
-                <tr ng-if="vm.sessionLogs.length === 0">
-                  <td colspan="4" class="text-center text-muted py-3">No completed practice switches recorded yet.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-outline-secondary btn-touch" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <script>
-    /* PracticeTempo AngularJS Application Module */
-    var app = angular.module('practiceTempoApp', []);
+    <!-- MODAL 5: BACKUP & DATA IMPORT/EXPORT MODAL -->
+    <div class="modal fade" id="backupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-pt">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Data Management & Backup</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column gap-3">
+                    <p class="text-muted small">Export all your practice logs, categories, and pieces to a JSON file or restore from a previous backup.</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" ng-click="vm.exportBackupJSON()">
+                            <i class="fa-solid fa-download me-2"></i> Export Data Backup (JSON)
+                        </button>
+                        <label class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-upload me-2"></i> Import Backup File
+                            <input type="file" accept=".json" style="display: none;" onchange="angular.element(this).scope().vm.importBackupJSON(event)">
+                        </label>
+                        <button class="btn btn-outline-danger" ng-click="vm.confirmResetData()">
+                            <i class="fa-solid fa-rotate-left me-2"></i> Reset to Default Sample Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    app.controller('PracticeController', ['$scope', '$interval', '$window', function($scope, $interval, $window) {
-      var vm = this;
+    <script>
+        var app = angular.module('practiceApp', []);
 
-      vm.categories = ['Warmup', 'Scales', 'Repertoire', 'Sight-reading', 'Technique'];
-      vm.selectedCategory = 'All';
-      vm.tasks = [];
-      vm.activeTask = null;
-      vm.isPaused = false;
-      vm.sessionTotalSeconds = 0;
-      vm.sessionLogs = [];
-      vm.editingTask = {};
-      
-      // Timer reference
-      var practiceTimer = null;
-      var activeTaskStartTime = null;
+        app.controller('PracticeController', ['$scope', '$timeout', '$interval', function($scope, $timeout, $interval) {
+            var vm = this;
 
-      vm.showMetronome = false;
-      vm.metronome = {
-        bpm: 100,
-        isPlaying: false,
-        timeSignature: 4,
-        currentBeat: 0
-      };
+            /* -----------------------------------------------------------------
+             * STATE INITIALIZATION & DEFAULT DATA
+             * ----------------------------------------------------------------- */
+            vm.currentTab = 'practice';
+            vm.selectedCategoryFilter = null;
+            vm.wakeLockActive = false;
+            vm.wakeLockSentinel = null;
 
-      var audioCtx = null;
-      var metronomeTimer = null;
-      var tapTimestamps = [];
+            // Metronome State
+            vm.metronomeRunning = false;
+            vm.metronomeBpm = 120;
+            vm.beatsPerMeasure = 4;
+            vm.accentFirstBeat = true;
+            vm.currentBeat = 0;
+            var audioCtx = null;
+            var metronomeTimer = null;
 
-      // Initialize AudioContext on first gesture
-      function getAudioContext() {
-        if (!audioCtx) {
-          var AudioContextClass = $window.AudioContext || $window.webkitAudioContext;
-          if (AudioContextClass) {
-            audioCtx = new AudioContextClass();
-          }
-        }
-        if (audioCtx && audioCtx.state === 'suspended') {
-          audioCtx.resume();
-        }
-        return audioCtx;
-      }
+            // Active Practice Timer State (Background Resilient)
+            vm.activeTask = null;
+            vm.activePiece = null;
+            vm.activeCategory = null;
+            vm.timerRunning = false;
+            vm.startTime = 0;
+            vm.elapsedBeforePause = 0;
+            vm.currentElapsedSeconds = 0;
+            vm.activeMinBpm = null;
+            vm.activeMaxBpm = null;
+            var timerInterval = null;
 
-      // Synthesize clean metronome tick sound
-      function playClick(isAccent) {
-        try {
-          var ctx = getAudioContext();
-          if (!ctx) return;
+            // Modal Title & Data Bindings (Guaranteed digest execution)
+            vm.confirmTitle = '';
+            vm.confirmMessage = '';
+            vm.confirmCallback = null;
+            vm.editingPiece = {};
+            vm.editingCategory = {};
+            vm.editingLog = {};
 
-          var osc = ctx.createOscillator();
-          var gain = ctx.createGain();
+            // Bootstrap Modal Instances
+            var modalInstances = {};
 
-          osc.type = 'sine';
-          // Pitch: Beat 1 accent = 1200Hz, normal beat = 800Hz
-          osc.frequency.setValueAtTime(isAccent ? 1200 : 800, ctx.currentTime);
-
-          gain.gain.setValueAtTime(1, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-
-          osc.start(ctx.currentTime);
-          osc.stop(ctx.currentTime + 0.04);
-        } catch (e) {
-          console.log('Audio error:', e);
-        }
-      }
-
-      vm.toggleMetronomeDrawer = function() {
-        vm.showMetronome = !vm.showMetronome;
-      };
-
-      vm.toggleMetronome = function() {
-        getAudioContext();
-        vm.metronome.isPlaying = !vm.metronome.isPlaying;
-        if (vm.metronome.isPlaying) {
-          vm.metronome.currentBeat = 0;
-          startMetronomeLoop();
-        } else {
-          stopMetronomeLoop();
-        }
-      };
-
-      function startMetronomeLoop() {
-        stopMetronomeLoop();
-        var intervalMs = (60 / vm.metronome.bpm) * 1000;
-        
-        // Play beat immediately
-        playClick(vm.metronome.currentBeat === 0);
-        
-        metronomeTimer = $interval(function() {
-          vm.metronome.currentBeat = (vm.metronome.currentBeat + 1) % vm.metronome.timeSignature;
-          playClick(vm.metronome.currentBeat === 0);
-        }, intervalMs);
-      }
-
-      function stopMetronomeLoop() {
-        if (metronomeTimer) {
-          $interval.cancel(metronomeTimer);
-          metronomeTimer = null;
-        }
-      }
-
-      vm.updateMetronomeTempo = function() {
-        if (vm.metronome.isPlaying) {
-          startMetronomeLoop();
-        }
-        vm.saveState();
-      };
-
-      vm.setBpm = function(val) {
-        vm.metronome.bpm = val;
-        vm.updateMetronomeTempo();
-      };
-
-      vm.adjustBpm = function(delta) {
-        var newBpm = vm.metronome.bpm + delta;
-        if (newBpm >= 30 && newBpm <= 250) {
-          vm.metronome.bpm = newBpm;
-          vm.updateMetronomeTempo();
-        }
-      };
-
-      vm.setSignature = function(sig) {
-        vm.metronome.timeSignature = sig;
-        vm.metronome.currentBeat = 0;
-        if (vm.metronome.isPlaying) {
-          startMetronomeLoop();
-        }
-      };
-
-      vm.getBeatArray = function() {
-        return new Array(vm.metronome.timeSignature);
-      };
-
-      // Tap Tempo algorithm
-      vm.tapTempo = function() {
-        var now = Date.now();
-        tapTimestamps.push(now);
-
-        // Keep last 4 taps within 3 seconds
-        tapTimestamps = tapTimestamps.filter(function(ts) {
-          return now - ts < 3000;
-        });
-
-        if (tapTimestamps.length >= 2) {
-          var intervals = [];
-          for (var i = 1; i < tapTimestamps.length; i++) {
-            intervals.push(tapTimestamps[i] - tapTimestamps[i - 1]);
-          }
-          var avgInterval = intervals.reduce(function(a, b) { return a + b; }, 0) / intervals.length;
-          var calculatedBpm = Math.round(60000 / avgInterval);
-          if (calculatedBpm >= 30 && calculatedBpm <= 250) {
-            vm.metronome.bpm = calculatedBpm;
-            vm.updateMetronomeTempo();
-          }
-        }
-      };
-
-      // Primary Practice Timer Ticker
-      function startPracticeTimer() {
-        if (practiceTimer) return;
-        activeTaskStartTime = Date.now();
-
-        practiceTimer = $interval(function() {
-          if (vm.activeTask && !vm.isPaused) {
-            vm.activeTask.secondsSpent++;
-            vm.sessionTotalSeconds++;
-            vm.saveState();
-          }
-        }, 1000);
-      }
-
-      function stopPracticeTimer() {
-        if (practiceTimer) {
-          $interval.cancel(practiceTimer);
-          practiceTimer = null;
-        }
-      }
-
-      // ONE-TAP TASK SWITCHING LOGIC
-      vm.selectTask = function(task) {
-        // If clicking the currently active task
-        if (vm.activeTask && vm.activeTask.id === task.id) {
-          vm.togglePauseTask();
-          return;
-        }
-
-        // Log previous active task duration if exists
-        if (vm.activeTask) {
-          logPracticeSegment(vm.activeTask);
-        }
-
-        // Instantly switch to newly selected task
-        vm.activeTask = task;
-        vm.isPaused = false;
-        activeTaskStartTime = Date.now();
-
-        startPracticeTimer();
-        vm.saveState();
-      };
-
-      vm.togglePauseTask = function() {
-        if (!vm.activeTask) return;
-        vm.isPaused = !vm.isPaused;
-        if (vm.isPaused) {
-          logPracticeSegment(vm.activeTask);
-        } else {
-          activeTaskStartTime = Date.now();
-        }
-      };
-
-      vm.stopActiveTask = function() {
-        if (vm.activeTask) {
-          logPracticeSegment(vm.activeTask);
-          vm.activeTask = null;
-          vm.isPaused = false;
-          stopPracticeTimer();
-          vm.saveState();
-        }
-      };
-
-      function logPracticeSegment(task) {
-        if (!activeTaskStartTime) return;
-        var elapsedSecs = Math.floor((Date.now() - activeTaskStartTime) / 1000);
-        if (elapsedSecs > 2) {
-          vm.sessionLogs.push({
-            taskId: task.id,
-            title: task.title,
-            bars: task.bars,
-            durationSeconds: elapsedSecs,
-            timestamp: new Date()
-          });
-        }
-        activeTaskStartTime = Date.now();
-      }
-
-      vm.filterCategory = function(cat) {
-        vm.selectedCategory = cat;
-      };
-
-      vm.categoryFilter = function(task) {
-        if (vm.selectedCategory === 'All') return true;
-        return task.category === vm.selectedCategory;
-      };
-
-      // Task CRUD Operations
-      vm.openAddTaskModal = function() {
-        vm.editingTask = {
-          title: '',
-          bars: '',
-          category: 'Repertoire',
-          plannedMinutes: 15,
-          notes: ''
-        };
-        var modalEl = document.getElementById('taskModal');
-        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-      };
-
-      vm.openEditTaskModal = function(task) {
-        vm.editingTask = angular.copy(task);
-        var modalEl = document.getElementById('taskModal');
-        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-      };
-
-      vm.saveTask = function() {
-        if (!vm.editingTask.title) return;
-
-        if (vm.editingTask.id) {
-          // Update existing
-          for (var i = 0; i < vm.tasks.length; i++) {
-            if (vm.tasks[i].id === vm.editingTask.id) {
-              vm.tasks[i] = angular.copy(vm.editingTask);
-              if (vm.activeTask && vm.activeTask.id === vm.editingTask.id) {
-                vm.activeTask = vm.tasks[i];
-              }
-              break;
+            function getModal(id) {
+                var el = document.getElementById(id);
+                if (!el) return null;
+                if (!modalInstances[id]) {
+                    modalInstances[id] = new bootstrap.Modal(el);
+                }
+                return modalInstances[id];
             }
-          }
-        } else {
-          // Create new
-          var newTask = {
-            id: 'task_' + Date.now(),
-            title: vm.editingTask.title,
-            bars: vm.editingTask.bars || '',
-            category: vm.editingTask.category || 'Repertoire',
-            notes: vm.editingTask.notes || '',
-            plannedMinutes: vm.editingTask.plannedMinutes || 15,
-            secondsSpent: 0
-          };
-          vm.tasks.push(newTask);
-        }
 
-        vm.saveState();
+            /* -----------------------------------------------------------------
+             * MODAL TRIGGER HELPERS WITH DIGEST SAFE WRAPPERS ($timeout)
+             * ----------------------------------------------------------------- */
+            vm.openConfirmModal = function(title, message, callback) {
+                $timeout(function() {
+                    vm.confirmTitle = title || 'Confirm Action';
+                    vm.confirmMessage = message || 'Are you sure you want to proceed?';
+                    vm.confirmCallback = callback;
+                    var m = getModal('confirmModal');
+                    if (m) m.show();
+                }, 0);
+            };
 
-        var modalEl = document.getElementById('taskModal');
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
-      };
+            vm.executeConfirmAction = function() {
+                if (typeof vm.confirmCallback === 'function') {
+                    vm.confirmCallback();
+                }
+            };
 
-      vm.deleteTask = function(taskId) {
-        if (confirm("Are you sure you want to delete this piece?")) {
-          if (vm.activeTask && vm.activeTask.id === taskId) {
-            vm.stopActiveTask();
-          }
-          vm.tasks = vm.tasks.filter(function(t) { return t.id !== taskId; });
-          vm.saveState();
-        }
-      };
+            vm.openPieceModal = function(piece) {
+                $timeout(function() {
+                    if (piece) {
+                        vm.editingPiece = angular.copy(piece);
+                    } else {
+                        vm.editingPiece = {
+                            id: Date.now(),
+                            title: '',
+                            composer: '',
+                            categoryId: vm.categories[0] ? vm.categories[0].id : 1,
+                            targetBars: '',
+                            tasks: []
+                        };
+                    }
+                    var m = getModal('pieceModal');
+                    if (m) m.show();
+                }, 0);
+            };
 
-      vm.resetAllSessionPrompt = function() {
-        if (confirm("Reset all practice timers for today? Your piece list will be preserved.")) {
-          vm.stopActiveTask();
-          vm.sessionTotalSeconds = 0;
-          vm.sessionLogs = [];
-          angular.forEach(vm.tasks, function(task) {
-            task.secondsSpent = 0;
-          });
-          vm.saveState();
-        }
-      };
+            vm.openCategoryModal = function(cat) {
+                $timeout(function() {
+                    if (cat) {
+                        vm.editingCategory = angular.copy(cat);
+                    } else {
+                        vm.editingCategory = {
+                            id: Date.now(),
+                            name: '',
+                            color: '#6366f1',
+                            icon: 'fa-folder'
+                        };
+                    }
+                    var m = getModal('categoryModal');
+                    if (m) m.show();
+                }, 0);
+            };
 
-      vm.openStatsModal = function() {
-        var modalEl = document.getElementById('statsModal');
-        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-      };
+            vm.openEditLogModal = function(log) {
+                $timeout(function() {
+                    if (log) {
+                        vm.editingLog = angular.copy(log);
+                        vm.editingLog.durationMinutes = Math.round(log.durationSeconds / 60);
+                        if (log.date) vm.editingLog.date = new Date(log.date);
+                    }
+                    var m = getModal('logModal');
+                    if (m) m.show();
+                }, 0);
+            };
 
-      vm.formatTime = function(totalSeconds) {
-        if (!totalSeconds || isNaN(totalSeconds)) return "00:00";
-        var hrs = Math.floor(totalSeconds / 3600);
-        var mins = Math.floor((totalSeconds % 3600) / 60);
-        var secs = totalSeconds % 60;
+            vm.openAddManualLogModal = function() {
+                $timeout(function() {
+                    vm.editingLog = {
+                        id: Date.now(),
+                        pieceTitle: 'Manual Practice',
+                        date: new Date(),
+                        durationMinutes: 30,
+                        barsWorked: '',
+                        categoryName: 'General',
+                        categoryColor: '#6366f1'
+                    };
+                    var m = getModal('logModal');
+                    if (m) m.show();
+                }, 0);
+            };
 
-        var pad = function(n) { return n < 10 ? '0' + n : n; };
+            vm.openBackupModal = function() {
+                $timeout(function() {
+                    var m = getModal('backupModal');
+                    if (m) m.show();
+                }, 0);
+            };
 
-        if (hrs > 0) {
-          return pad(hrs) + ":" + pad(mins) + ":" + pad(secs);
-        }
-        return pad(mins) + ":" + pad(secs);
-      };
+            /* -----------------------------------------------------------------
+             * PERSISTENCE & INITIAL SEEDING
+             * ----------------------------------------------------------------- */
+            var STORAGE_KEY = 'PracticeTempo_V2_Data';
 
-      vm.getTaskProgressPercent = function(task) {
-        if (!task || !task.plannedMinutes) return 0;
-        var plannedSeconds = task.plannedMinutes * 60;
-        var pct = Math.round((task.secondsSpent / plannedSeconds) * 100);
-        return Math.min(pct, 100);
-      };
+            function loadInitialData() {
+                var raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    try {
+                        var parsed = JSON.parse(raw);
+                        vm.categories = parsed.categories || [];
+                        vm.pieces = parsed.pieces || [];
+                        vm.logs = parsed.logs || [];
+                        return;
+                    } catch(e) { console.error('Failed to parse storage', e); }
+                }
 
-      vm.getProgressColorClass = function(pct) {
-        if (pct < 40) return 'bg-info';
-        if (pct < 85) return 'bg-warning';
-        return 'bg-success';
-      };
+                // Default seed data
+                vm.categories = [
+                    { id: 1, name: 'Scales & Technique', color: '#3b82f6', icon: 'fa-graduation-cap' },
+                    { id: 2, name: 'Repertoire Pieces', color: '#5ceef6', icon: 'fa-music' },
+                    { id: 3, name: 'Etudes & Exercises', color: '#ec4899', icon: 'fa-book-open' },
+                    { id: 4, name: 'Sight Reading', color: '#10b981', icon: 'fa-eye' }
+                ];
 
-      vm.getCategoryClass = function(category) {
-        switch (category) {
-          case 'Warmup': return 'cat-warmup';
-          case 'Scales': return 'cat-scales';
-          case 'Repertoire': return 'cat-repertoire';
-          case 'Sight-reading': return 'cat-sightreading';
-          case 'Technique': return 'cat-technique';
-          default: return 'cat-repertoire';
-        }
-      };
+                vm.pieces = [
+                    {
+                        id: 101,
+                        title: 'Moonlight Sonata - 1st Mvt',
+                        composer: 'L. v. Beethoven',
+                        categoryId: 2,
+                        targetBars: 'mm. 1-69',
+                        tasks: [
+                            { id: 1001, title: 'Left hand arpeggios balance mm. 1-15', completed: false },
+                            { id: 1002, title: 'Melodic voicing & legato, measure 27-42', completed: false }
+                        ]
+                    },
+                    {
+                        id: 102,
+                        title: 'Hanon Exercise No. 1',
+                        composer: 'C.L. Hanon',
+                        categoryId: 1,
+                        targetBars: 'Full Pattern',
+                        tasks: [
+                            { id: 1003, title: 'Even rhythm at 110 BPM with metronome', completed: true }
+                        ]
+                    }
+                ];
 
-      vm.getCategoryBgClass = function(category) {
-        switch (category) {
-          case 'Warmup': return 'bg-warning';
-          case 'Scales': return 'bg-primary';
-          case 'Repertoire': return 'bg-purple';
-          case 'Sight-reading': return 'bg-success';
-          case 'Technique': return 'bg-danger';
-          default: return 'bg-info';
-        }
-      };
+                var todayStr = new Date().toISOString().split('T')[0];
+                vm.logs = [
+                    {
+                        id: 501,
+                        pieceId: 101,
+                        pieceTitle: 'Moonlight Sonata - 1st Mvt',
+                        taskTitle: 'Left hand arpeggios balance mm. 1-15',
+                        categoryName: 'Repertoire Pieces',
+                        categoryColor: '#5ceef6',
+                        date: todayStr,
+                        timeFormatted: '10:15 AM',
+                        durationSeconds: 1500,
+                        barsWorked: 'mm. 1-15',
+                        minBpm: 60,
+                        maxBpm: 68,
+                        startTime: Date.now() - 3600000
+                    }
+                ];
 
-      // Analytics Calculations
-      vm.getTotalPlannedMinutes = function() {
-        return vm.tasks.reduce(function(sum, t) { return sum + (t.plannedMinutes || 0); }, 0);
-      };
-
-      vm.getPracticedPiecesCount = function() {
-        return vm.tasks.filter(function(t) { return t.secondsSpent > 0; }).length;
-      };
-
-      vm.getOverallCompletionPercent = function() {
-        var totalPlannedSecs = vm.getTotalPlannedMinutes() * 60;
-        if (totalPlannedSecs === 0) return 0;
-        return Math.min(100, Math.round((vm.sessionTotalSeconds / totalPlannedSecs) * 100));
-      };
-
-      vm.getCategoryTimeSpent = function(category) {
-        return vm.tasks
-          .filter(function(t) { return t.category === category; })
-          .reduce(function(sum, t) { return sum + (t.secondsSpent || 0); }, 0);
-      };
-
-      vm.getCategoryTimePercent = function(category) {
-        if (vm.sessionTotalSeconds === 0) return 0;
-        return Math.round((vm.getCategoryTimeSpent(category) / vm.sessionTotalSeconds) * 100);
-      };
-
-      vm.saveState = function() {
-        var state = {
-          tasks: vm.tasks,
-          sessionTotalSeconds: vm.sessionTotalSeconds,
-          sessionLogs: vm.sessionLogs,
-          activeTaskId: vm.activeTask ? vm.activeTask.id : null,
-          metronomeBpm: vm.metronome.bpm
-        };
-        $window.localStorage.setItem('practice_tempo_data', JSON.stringify(state));
-      };
-
-      vm.loadState = function() {
-        var saved = $window.localStorage.getItem('practice_tempo_data');
-        if (saved) {
-          try {
-            var data = JSON.parse(saved);
-            vm.tasks = data.tasks || [];
-            vm.sessionTotalSeconds = data.sessionTotalSeconds || 0;
-            vm.sessionLogs = data.sessionLogs || [];
-            if (data.metronomeBpm) vm.metronome.bpm = data.metronomeBpm;
-
-            if (data.activeTaskId) {
-              var found = vm.tasks.find(function(t) { return t.id === data.activeTaskId; });
-              if (found) {
-                vm.activeTask = found;
-                vm.isPaused = true; // start paused when loaded
-              }
+                vm.saveData();
             }
-          } catch (e) {
-            vm.loadDefaults();
-          }
-        } else {
-          vm.loadDefaults();
-        }
-      };
 
-      vm.loadDefaults = function() {
-        vm.tasks = [
-          {
-            id: 'task_1',
-            title: 'Chopin Nocturne Op. 9 No. 2',
-            bars: 'm. 1-12 (Theme & Ornaments)',
-            category: 'Repertoire',
-            notes: 'Keep left hand accompaniment light and steady; smooth cadenza trills.',
-            plannedMinutes: 15,
-            secondsSpent: 420
-          },
-          {
-            id: 'task_2',
-            title: 'Bach Prelude in C Major (BWV 846)',
-            bars: 'm. 1-19',
-            category: 'Repertoire',
-            notes: 'Clear articulation, maintain continuous pulse, even tone in arpeggios.',
-            plannedMinutes: 10,
-            secondsSpent: 300
-          },
-          {
-            id: 'task_3',
-            title: 'Hanon Exercise #1',
-            bars: 'Full Exercise',
-            category: 'Technique',
-            notes: 'Lift 4th and 5th fingers cleanly. Practice Staccato then Legato at 100 BPM.',
-            plannedMinutes: 10,
-            secondsSpent: 600
-          },
-          {
-            id: 'task_4',
-            title: 'G Major & E Minor Arpeggios',
-            bars: '4 Octaves',
-            category: 'Warmup',
-            notes: 'Focus on smooth thumb passage and light wrist turns.',
-            plannedMinutes: 8,
-            secondsSpent: 240
-          },
-          {
-            id: 'task_5',
-            title: 'Debussy - Clair de Lune',
-            bars: 'm. 15-26 (Rubato section)',
-            category: 'Sight-reading',
-            notes: 'Count 9/8 subdivisions accurately. Voice top melody over rolling chords.',
-            plannedMinutes: 12,
-            secondsSpent: 0
-          }
-        ];
-        vm.sessionTotalSeconds = 1560;
-        vm.saveState();
-      };
+            vm.saveData = function() {
+                var data = {
+                    categories: vm.categories,
+                    pieces: vm.pieces,
+                    logs: vm.logs
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            };
 
-      // Initialize Application
-      vm.loadState();
-    }]);
-  </script>
+            /* -----------------------------------------------------------------
+             * CATEGORY & PIECE MANAGEMENT
+             * ----------------------------------------------------------------- */
+            vm.getCategory = function(catId) {
+                return vm.categories.find(function(c) { return c.id === catId; }) || { name: 'Uncategorized', color: '#64748b' };
+            };
+
+            vm.getPieceCountForCategory = function(catId) {
+                return vm.pieces.filter(function(p) { return p.categoryId === catId; }).length;
+            };
+
+            vm.pieceCategoryFilter = function(piece) {
+                if (vm.selectedCategoryFilter === null) return true;
+                return piece.categoryId === vm.selectedCategoryFilter;
+            };
+
+            vm.savePieceForm = function() {
+                var existingIndex = vm.pieces.findIndex(function(p) { return p.id === vm.editingPiece.id; });
+                if (existingIndex > -1) {
+                    vm.pieces[existingIndex] = vm.editingPiece;
+                } else {
+                    vm.pieces.push(vm.editingPiece);
+                }
+                vm.saveData();
+                var m = getModal('pieceModal');
+                if (m) m.hide();
+            };
+
+            vm.confirmDeletePiece = function(piece) {
+                vm.openConfirmModal('Delete Piece', 'Are you sure you want to delete "' + piece.title + '" and its tasks?', function() {
+                    vm.pieces = vm.pieces.filter(function(p) { return p.id !== piece.id; });
+                    vm.saveData();
+                });
+            };
+
+            vm.saveCategoryForm = function() {
+                var existingIndex = vm.categories.findIndex(function(c) { return c.id === vm.editingCategory.id; });
+                if (existingIndex > -1) {
+                    vm.categories[existingIndex] = vm.editingCategory;
+                } else {
+                    vm.categories.push(vm.editingCategory);
+                }
+                vm.saveData();
+                var m = getModal('categoryModal');
+                if (m) m.hide();
+            };
+
+            vm.addNewTaskToPiece = function(piece) {
+                if (!piece.tasks) piece.tasks = [];
+                piece.tasks.push({
+                    id: Date.now(),
+                    title: 'New Focus Area',
+                    completed: false
+                });
+                vm.saveData();
+            };
+
+            vm.removeTaskFromPiece = function(piece, index) {
+                piece.tasks.splice(index, 1);
+                vm.saveData();
+            };
+
+            /* -----------------------------------------------------------------
+             * BACKGROUND-RESILIENT PRACTICE TIMER
+             * ----------------------------------------------------------------- */
+            vm.selectAndStartTask = function(piece, task) {
+                // If a session is currently running, automatically finish & save it first
+                if (vm.activeTask) {
+                    vm.stopAndSaveSession();
+                }
+
+                vm.activePiece = piece;
+                vm.activeTask = task;
+                vm.activeCategory = vm.getCategory(piece.categoryId);
+                vm.elapsedBeforePause = 0;
+                vm.activeMinBpm = vm.metronomeRunning ? vm.metronomeBpm : null;
+                vm.activeMaxBpm = vm.metronomeRunning ? vm.metronomeBpm : null;
+                
+                vm.startTimer();
+            };
+
+            vm.startTimer = function() {
+                vm.timerRunning = true;
+                vm.startTime = Date.now() - (vm.elapsedBeforePause * 1000);
+
+                if (timerInterval) $interval.cancel(timerInterval);
+                timerInterval = $interval(function() {
+                    if (vm.timerRunning) {
+                        vm.currentElapsedSeconds = Math.floor((Date.now() - vm.startTime) / 1000);
+                        
+                        // Metronome BPM tracking during session
+                        if (vm.metronomeRunning) {
+                            if (vm.activeMinBpm === null || vm.metronomeBpm < vm.activeMinBpm) vm.activeMinBpm = vm.metronomeBpm;
+                            if (vm.activeMaxBpm === null || vm.metronomeBpm > vm.activeMaxBpm) vm.activeMaxBpm = vm.metronomeBpm;
+                        }
+                    }
+                }, 200);
+            };
+
+            vm.toggleTimer = function() {
+                if (vm.timerRunning) {
+                    vm.timerRunning = false;
+                    vm.elapsedBeforePause = vm.currentElapsedSeconds;
+                } else {
+                    vm.startTimer();
+                }
+            };
+
+            vm.stopAndSaveSession = function() {
+                if (!vm.activeTask) return;
+
+                if (vm.currentElapsedSeconds >= 5) {
+                    var now = new Date();
+                    var logEntry = {
+                        id: Date.now(),
+                        pieceId: vm.activePiece.id,
+                        pieceTitle: vm.activePiece.title,
+                        taskTitle: vm.activeTask.title,
+                        categoryName: vm.activeCategory.name,
+                        categoryColor: vm.activeCategory.color,
+                        date: now.toISOString().split('T')[0],
+                        timeFormatted: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        durationSeconds: vm.currentElapsedSeconds,
+                        barsWorked: vm.activePiece.targetBars || '',
+                        minBpm: vm.activeMinBpm,
+                        maxBpm: vm.activeMaxBpm,
+                        startTime: now.getTime()
+                    };
+                    vm.logs.unshift(logEntry);
+                    vm.saveData();
+                }
+
+                vm.cancelTimer();
+            };
+
+            vm.cancelTimer = function() {
+                if (timerInterval) $interval.cancel(timerInterval);
+                vm.activeTask = null;
+                vm.activePiece = null;
+                vm.activeCategory = null;
+                vm.timerRunning = false;
+                vm.currentElapsedSeconds = 0;
+                vm.elapsedBeforePause = 0;
+            };
+
+            /* -----------------------------------------------------------------
+             * WEB AUDIO METRONOME (iOS SAFARI COMPATIBLE)
+             * ----------------------------------------------------------------- */
+            function initAudioContext() {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            vm.toggleMetronome = function() {
+                initAudioContext();
+                vm.metronomeRunning = !vm.metronomeRunning;
+                if (vm.metronomeRunning) {
+                    vm.currentBeat = 0;
+                    runMetronomeLoop();
+                } else {
+                    if (metronomeTimer) $timeout.cancel(metronomeTimer);
+                }
+            };
+
+            function runMetronomeLoop() {
+                if (!vm.metronomeRunning) return;
+
+                // Play Audio Click
+                playClickSound(vm.currentBeat === 0 && vm.accentFirstBeat);
+
+                // Schedule next beat
+                var intervalMs = (60 / vm.metronomeBpm) * 1000;
+                metronomeTimer = $timeout(function() {
+                    vm.currentBeat = (vm.currentBeat + 1) % vm.beatsPerMeasure;
+                    runMetronomeLoop();
+                }, intervalMs);
+            }
+
+            function playClickSound(isAccent) {
+                if (!audioCtx) return;
+                try {
+                    var osc = audioCtx.createOscillator();
+                    var gain = audioCtx.createGain();
+
+                    osc.type = isAccent ? 'triangle' : 'sine';
+                    osc.frequency.setValueAtTime(isAccent ? 1200 : 800, audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.05);
+                } catch(e) { console.error('Audio synthesis error', e); }
+            }
+
+            vm.adjustBpm = function(delta) {
+                vm.metronomeBpm = Math.max(30, Math.min(280, vm.metronomeBpm + delta));
+            };
+
+            vm.updateMetronomeTempo = function() {
+                // Instantly re-aligns loop
+            };
+
+            vm.getBeatArray = function() {
+                return new Array(vm.beatsPerMeasure);
+            };
+
+            /* -----------------------------------------------------------------
+             * SCREEN WAKE LOCK API
+             * ----------------------------------------------------------------- */
+            vm.toggleWakeLock = function() {
+                if (!('wakeLock' in navigator)) {
+                    vm.openConfirmModal('Wake Lock Unsupported', 'Your browser does not support the Screen Wake Lock API.');
+                    return;
+                }
+
+                if (vm.wakeLockActive) {
+                    if (vm.wakeLockSentinel) vm.wakeLockSentinel.release();
+                    vm.wakeLockActive = false;
+                } else {
+                    navigator.wakeLock.request('screen').then(function(sentinel) {
+                        vm.wakeLockSentinel = sentinel;
+                        vm.wakeLockActive = true;
+                        $scope.$applyAsync();
+                    }).catch(function(err) {
+                        console.error('Wake lock error:', err);
+                    });
+                }
+            };
+
+            /* -----------------------------------------------------------------
+             * LOGS & MANUAL retro editing
+             * ----------------------------------------------------------------- */
+            vm.saveLogForm = function() {
+                if (vm.editingLog.id) {
+                    var idx = vm.logs.findIndex(function(l) { return l.id === vm.editingLog.id; });
+                    if (idx > -1) {
+                        vm.editingLog.durationSeconds = vm.editingLog.durationMinutes * 60;
+                        if (vm.editingLog.date instanceof Date) {
+                            vm.editingLog.date = vm.editingLog.date.toISOString().split('T')[0];
+                        }
+                        vm.logs[idx] = vm.editingLog;
+                    } else {
+                        vm.editingLog.durationSeconds = vm.editingLog.durationMinutes * 60;
+                        if (vm.editingLog.date instanceof Date) {
+                            vm.editingLog.date = vm.editingLog.date.toISOString().split('T')[0];
+                        }
+                        vm.logs.unshift(vm.editingLog);
+                    }
+                }
+                vm.saveData();
+                var m = getModal('logModal');
+                if (m) m.hide();
+            };
+
+            vm.confirmDeleteLog = function(log) {
+                vm.openConfirmModal('Delete Practice Log', 'Are you sure you want to delete this log entry?', function() {
+                    vm.logs = vm.logs.filter(function(l) { return l.id !== log.id; });
+                    vm.saveData();
+                });
+            };
+
+            /* -----------------------------------------------------------------
+             * SUMMARY & PIVOT TABLE ANALYTICS
+             * ----------------------------------------------------------------- */
+            vm.pivotRowKey = 'pieceTitle';
+            vm.pivotColKey = 'categoryName';
+            vm.pivotData = { rows: [], columns: [] };
+
+            vm.getTodayTotalSeconds = function() {
+                var today = new Date().toISOString().split('T')[0];
+                return vm.logs.filter(function(l) { return l.date === today; })
+                              .reduce(function(acc, l) { return acc + (l.durationSeconds || 0); }, 0);
+            };
+
+            vm.getTodaySessionCount = function() {
+                var today = new Date().toISOString().split('T')[0];
+                return vm.logs.filter(function(l) { return l.date === today; }).length;
+            };
+
+            vm.rebuildPivotTable = function() {
+                var colMap = {};
+                var rowMap = {};
+
+                vm.logs.forEach(function(l) {
+                    var rVal = l[vm.pivotRowKey] || 'Unassigned';
+                    var cVal = (vm.pivotColKey === 'totalOnly') ? 'Time' : (l[vm.pivotColKey] || 'Other');
+
+                    colMap[cVal] = true;
+                    if (!rowMap[rVal]) rowMap[rVal] = { name: rVal, cols: {}, totalSeconds: 0 };
+
+                    if (!rowMap[rVal].cols[cVal]) rowMap[rVal].cols[cVal] = 0;
+                    rowMap[rVal].cols[cVal] += l.durationSeconds;
+                    rowMap[rVal].totalSeconds += l.durationSeconds;
+                });
+
+                vm.pivotData.columns = Object.keys(colMap);
+                vm.pivotData.rows = Object.keys(rowMap).map(function(k) { return rowMap[k]; });
+            };
+
+            vm.switchTab = function(tabName) {
+                vm.currentTab = tabName;
+                if (tabName === 'analytics') {
+                    vm.rebuildPivotTable();
+                    $timeout(renderCharts, 100);
+                }
+            };
+
+            var trendChartInstance = null;
+            var catChartInstance = null;
+
+            function renderCharts() {
+                var ctxTrend = document.getElementById('trendChart');
+                var ctxCat = document.getElementById('categoryChart');
+                if (!ctxTrend || !ctxCat) return;
+
+                if (trendChartInstance) trendChartInstance.destroy();
+                if (catChartInstance) catChartInstance.destroy();
+
+                // Group logs by date for trend
+                var dateTotals = {};
+                vm.logs.forEach(function(l) {
+                    dateTotals[l.date] = (dateTotals[l.date] || 0) + Math.round(l.durationSeconds / 60);
+                });
+
+                var dates = Object.keys(dateTotals).sort().slice(-7);
+                var trendMinutes = dates.map(function(d) { return dateTotals[d]; });
+
+                trendChartInstance = new Chart(ctxTrend, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Minutes Practiced',
+                            data: trendMinutes,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // Group by Category
+                var catTotals = {};
+                vm.logs.forEach(function(l) {
+                    catTotals[l.categoryName] = (catTotals[l.categoryName] || 0) + Math.round(l.durationSeconds / 60);
+                });
+
+                catChartInstance = new Chart(ctxCat, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(catTotals),
+                        datasets: [{
+                            data: Object.values(catTotals),
+                            backgroundColor: ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            /* -----------------------------------------------------------------
+             * BACKUP & RESTORE / UTILITY FUNCTIONS
+             * ----------------------------------------------------------------- */
+            vm.formatDuration = function(totalSecs) {
+                if (!totalSecs || isNaN(totalSecs)) return '00:00:00';
+                var hrs = Math.floor(totalSecs / 3600);
+                var mins = Math.floor((totalSecs % 3600) / 60);
+                var secs = totalSecs % 60;
+
+                var p2 = function(n) { return n < 10 ? '0' + n : n; };
+                return p2(hrs) + ':' + p2(mins) + ':' + p2(secs);
+            };
+
+            vm.exportBackupJSON = function() {
+                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem(STORAGE_KEY));
+                var dlAnchor = document.createElement('a');
+                dlAnchor.setAttribute("href", dataStr);
+                dlAnchor.setAttribute("download", "PracticeTempo_Backup_" + new Date().toISOString().split('T')[0] + ".json");
+                document.body.appendChild(dlAnchor);
+                dlAnchor.click();
+                dlAnchor.remove();
+            };
+
+            vm.importBackupJSON = function(event) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        var parsed = JSON.parse(e.target.result);
+                        if (parsed.categories && parsed.pieces && parsed.logs) {
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+                            loadInitialData();
+                            $scope.$applyAsync();
+                            var m = getModal('backupModal');
+                            if (m) m.hide();
+                            vm.openConfirmModal('Import Successful', 'Your practice data was restored successfully!');
+                        }
+                    } catch(err) {
+                        vm.openConfirmModal('Import Failed', 'Invalid JSON backup file format.');
+                    }
+                };
+                if (event.target.files[0]) {
+                    reader.readAsText(event.target.files[0]);
+                }
+            };
+
+            vm.confirmResetData = function() {
+                vm.openConfirmModal('Reset All Data', 'Are you sure you want to reset all data to default values? This cannot be undone.', function() {
+                    localStorage.removeItem(STORAGE_KEY);
+                    loadInitialData();
+                    $scope.$applyAsync();
+                    var m = getModal('backupModal');
+                    if (m) m.hide();
+                });
+            };
+
+            // Initialize app data on startup
+            loadInitialData();
+        }]);
+    </script>
 </body>
 </html>
