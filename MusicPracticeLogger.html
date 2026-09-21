@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="practiceApp">
+<html lang="en" ng-app="practiceTempoApp">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PracticeTempo - Musician Practice Tracker</title>
     
     <!-- Bootstrap 5 CSS -->
@@ -10,31 +10,36 @@
     <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts: Inter & JetBrains Mono -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Essential ng-cloak rule preventing uncompiled template tags from displaying */
+        /* Prevent uncompiled AngularJS template tags from flashing on load */
         [ng-cloak] {
             display: none !important;
         }
 
         :root {
-            --pt-bg: #0f172a;
-            --pt-card: #1e293b;
-            --pt-card-hover: #334155;
-            --pt-border: #334155;
-            --pt-accent: #6366f1;
-            --pt-accent-hover: #4f46e5;
-            --pt-text: #f8fafc;
-            --pt-muted: #94a3b8;
+            --pt-bg-dark: #090d16;
+            --pt-card-bg: #131c2e;
+            --pt-card-border: #2a3756;
+            --pt-card-hover: #1c2942;
+            --pt-text-main: #ffffff;
+            --pt-text-sub: #cbd5e1;
+            --pt-text-muted: #94a3b8;
+            --pt-accent-blue: #38bdf8;
+            --pt-accent-emerald: #10b981;
+            --pt-accent-rose: #f43f5e;
+            --pt-accent-amber: #f59e0b;
+            --pt-accent-purple: #a855f7;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--pt-bg);
-            color: var(--pt-text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--pt-bg-dark);
+            color: var(--pt-text-main);
             min-height: 100vh;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .mono {
@@ -43,157 +48,198 @@
 
         /* Glassmorphic Navbar */
         .navbar-pt {
-            background-color: rgba(30, 41, 59, 0.85);
+            background-color: rgba(19, 28, 46, 0.92);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--pt-border);
+            border-bottom: 2px solid var(--pt-card-border);
         }
 
-        /* Card Styling */
+        /* High Contrast Card Styling */
         .card-pt {
-            background-color: var(--pt-card);
-            border: 1px solid var(--pt-border);
+            background-color: var(--pt-card-bg);
+            border: 1px solid var(--pt-card-border);
             border-radius: 1rem;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+            transition: all 0.2s ease-in-out;
         }
 
-        .card-pt-interactive:hover {
-            border-color: #6366f1;
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        .card-pt-active {
+            border: 2px solid var(--pt-accent-emerald) !important;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3) !important;
+            background: linear-gradient(145deg, #132238 0%, #0d1a2d 100%);
         }
 
-        /* Responsive Timer Banner */
+        /* Responsive Active Timer Banner */
         .active-timer-banner {
-            background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);
-            border: 1px solid #4f46e5;
-            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
+            background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+            border: 2px solid var(--pt-accent-emerald);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);
             border-radius: 1.25rem;
         }
 
         /* Pulse animation for metronome beat */
-        @keyframes pulse-accent {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-            50% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        @keyframes pulse-emerald {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+            50% { transform: scale(1.12); box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
         .beat-active {
-            animation: pulse-accent 0.15s ease-out;
-            background-color: #818cf8 !important;
+            animation: pulse-emerald 0.15s ease-out;
+            background-color: var(--pt-accent-emerald) !important;
             color: #ffffff !important;
         }
 
-        /* Touch-friendly buttons for mobile iOS/Android */
+        /* High Contrast Touch-Friendly Buttons */
         .btn-touch {
             min-height: 48px;
-            padding: 0.6rem 1.25rem;
-            font-weight: 600;
+            padding: 0.65rem 1.25rem;
+            font-weight: 700;
             border-radius: 0.75rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            letter-spacing: 0.02em;
         }
 
-        /* Modal styling */
+        .btn-emerald {
+            background-color: #10b981;
+            color: #042f2e;
+            border: none;
+        }
+        .btn-emerald:hover, .btn-emerald:focus {
+            background-color: #34d399;
+            color: #042f2e;
+        }
+
+        .btn-sky {
+            background-color: #38bdf8;
+            color: #082f49;
+            border: none;
+        }
+        .btn-sky:hover, .btn-sky:focus {
+            background-color: #7dd3fc;
+            color: #082f49;
+        }
+
+        /* High-Contrast Badges */
+        .badge-cat {
+            font-weight: 700;
+            padding: 0.45em 0.85em;
+            border-radius: 2rem;
+            font-size: 0.82rem;
+            color: #ffffff !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* High Contrast Checklist Inputs */
+        .checklist-item-input {
+            background: transparent;
+            border: none;
+            color: var(--pt-text-main);
+            font-weight: 500;
+            font-size: 0.95rem;
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .checklist-item-input:focus {
+            background-color: #0f172a;
+            outline: 2px solid var(--pt-accent-blue);
+            color: #ffffff;
+        }
+        .checklist-completed {
+            text-decoration: line-through;
+            color: var(--pt-text-muted) !important;
+            opacity: 0.7;
+        }
+
+        /* High Contrast Modal Styling */
         .modal-content-pt {
-            background-color: var(--pt-card);
-            color: var(--pt-text);
-            border: 1px solid var(--pt-border);
+            background-color: #131c2e;
+            color: #ffffff;
+            border: 2px solid var(--pt-card-border);
             border-radius: 1.25rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
         }
-
         .modal-header, .modal-footer {
-            border-color: var(--pt-border);
+            border-color: var(--pt-card-border);
         }
 
         .form-control-pt, .form-select-pt {
-            background-color: #0f172a;
-            border: 1px solid var(--pt-border);
-            color: var(--pt-text);
-            border-radius: 0.6rem;
-            padding: 0.65rem 0.9rem;
-        }
-
-        .form-control-pt:focus, .form-select-pt:focus {
-            background-color: #0f172a;
-            border-color: #6366f1;
+            background-color: #090d16;
+            border: 2px solid var(--pt-card-border);
             color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+            font-weight: 500;
+            border-radius: 0.6rem;
+            padding: 0.7rem 0.9rem;
+        }
+        .form-control-pt:focus, .form-select-pt:focus {
+            background-color: #090d16;
+            border-color: var(--pt-accent-blue);
+            color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25);
         }
 
-        /* Category pills */
-        .badge-cat {
-            font-weight: 600;
-            padding: 0.35em 0.75em;
-            border-radius: 2rem;
-            font-size: 0.8rem;
-        }
-
-        /* Table styling for Pivot view & Practice log */
+        /* Table Styling for Pivot view & Practice history */
         .table-pt {
-            color: var(--pt-text);
-            border-color: var(--pt-border);
+            color: #ffffff;
+            border-color: var(--pt-card-border);
         }
         .table-pt th {
-            background-color: rgba(15, 23, 42, 0.6);
-            color: var(--pt-muted);
-            font-weight: 600;
+            background-color: #090d16;
+            color: #f1f5f9;
+            font-weight: 700;
             text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+            border-bottom: 2px solid var(--pt-card-border);
         }
         .table-pt td {
             background-color: transparent;
             vertical-align: middle;
+            color: #cbd5e1;
+            font-weight: 500;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #2a3756; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
     </style>
 
     <!-- AngularJS 1.8.3 -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Chart.js for analytics -->
+    <!-- Chart.js for analytics visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body ng-controller="PracticeController as vm" ng-cloak>
 
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-pt sticky-top">
-        <div class="container-fluid px-3 px-md-4">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pt sticky-top px-2 px-md-4">
+        <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-                <i class="fa-solid fa-metronome text-indigo-400 text-primary fs-4"></i>
-                <span class="fw-bold fs-4 tracking-tight">Practice<span class="text-indigo-400 text-primary">Tempo</span></span>
+                <i class="fa-solid fa-metronome text-info fs-3"></i>
+                <span class="fw-extrabold fs-3 tracking-tight">Practice<span class="text-info">Tempo</span></span>
             </a>
 
             <div class="d-flex align-items-center gap-2 ms-auto">
-                <!-- Screen Wake Lock Toggle Button -->
-                <button class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-2" 
+                <!-- Screen Wake Lock Toggle -->
+                <button class="btn btn-outline-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-semibold" 
                         ng-click="vm.toggleWakeLock()"
-                        title="Prevent screen from turning off during practice">
-                    <i class="fa-solid" ng-class="vm.wakeLockActive ? 'fa-sun text-warning' : 'fa-moon'"></i>
-                    <span class="d-none d-sm-inline" ng-bind="vm.wakeLockActive ? 'Wake Lock ON' : 'Wake Lock OFF'"></span>
+                        title="Prevent screen from turning off while practicing">
+                    <i class="fa-solid" ng-class="vm.wakeLockActive ? 'fa-sun text-warning' : 'fa-moon text-secondary'"></i>
+                    <span class="d-none d-sm-inline" ng-bind="vm.wakeLockActive ? 'Screen Awake: ON' : 'Keep Screen Awake'"></span>
                 </button>
 
-                <!-- Settings / Data Export Backup -->
-                <button class="btn btn-outline-light btn-sm rounded-pill" ng-click="vm.openBackupModal()">
-                    <i class="fa-solid fa-arrows-rotate me-1"></i> Data & Backup
+                <!-- Settings / Backup Data -->
+                <button class="btn btn-outline-info btn-sm rounded-pill px-3 py-2 fw-semibold" ng-click="vm.openBackupModal()">
+                    <i class="fa-solid fa-cloud-arrow-down me-1"></i> Data & Backup
                 </button>
             </div>
         </div>
@@ -201,36 +247,47 @@
 
     <main class="container-fluid px-3 px-md-4 py-4">
 
-        <!-- Active Timer Display Banner -->
-        <div class="row mb-4" ng-if="vm.activeTask">
+        <!-- ACTIVE PRACTICE TIMER BANNER (PIECE LEVEL) -->
+        <div class="row mb-4" ng-if="vm.activePiece">
             <div class="col-12">
-                <div class="active-timer-banner p-4 text-white">
+                <div class="active-timer-banner p-3 p-md-4 text-white">
                     <div class="row align-items-center g-3">
                         <div class="col-lg-6">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="badge badge-cat" ng-style="{'background-color': vm.activeCategory.color}" ng-bind="vm.activeCategory.name"></span>
-                                <span class="text-white-50 text-sm" ng-bind="vm.activePiece.composer"></span>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge badge-cat" 
+                                      ng-style="{'background-color': vm.getCategory(vm.activePiece.categoryId).color}" 
+                                      ng-bind="vm.getCategory(vm.activePiece.categoryId).name"></span>
+                                <span class="badge bg-emerald text-dark fw-bold" style="background-color: #10b981; color: #022c22;">
+                                    <i class="fa-solid fa-circle-play fa-beat-fade me-1"></i> PRACTICING NOW
+                                </span>
                             </div>
-                            <h2 class="fw-bold mb-1" ng-bind="vm.activePiece.title"></h2>
-                            <p class="text-indigo-200 mb-0 d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-list-check"></i>
-                                Task: <strong ng-bind="vm.activeTask.title"></strong>
+                            <h2 class="fw-bold mb-1 text-white" ng-bind="vm.activePiece.title"></h2>
+                            <p class="text-light mb-0 d-flex align-items-center gap-2 fs-6">
+                                <i class="fa-solid fa-user-pen text-info"></i>
+                                Composer: <strong class="text-white" ng-bind="vm.activePiece.composer || 'Unknown'"></strong>
+                                <span class="ms-2" ng-if="vm.activePiece.targetBars">
+                                    |<i class="fa-solid fa-music ms-2 me-1 text-warning"></i> Target: <span class="fw-bold text-white" ng-bind="vm.activePiece.targetBars"></span>
+                                </span>
                             </p>
+                            <!-- Metronome min/max tempo live indicator -->
+                            <div class="mt-2 text-info small fw-bold" ng-if="vm.sessionMinBpm">
+                                <i class="fa-solid fa-gauge-high me-1"></i> Metronome Tempo Used: 
+                                <span class="text-white mono bg-dark px-2 py-1 rounded" ng-bind="vm.sessionMinBpm + ' - ' + vm.sessionMaxBpm + ' BPM'"></span>
+                            </div>
                         </div>
 
                         <!-- Timer Clock & Control Buttons -->
                         <div class="col-lg-6 text-lg-end">
-                            <div class="mono display-3 fw-bold tracking-wider mb-2" ng-bind="vm.formatDuration(vm.currentElapsedSeconds)">00:00:00</div>
+                            <div class="mono display-3 fw-bold tracking-wider text-white mb-2" ng-bind="vm.formatDuration(vm.currentElapsedSeconds)">00:00:00</div>
                             <div class="d-flex flex-wrap align-items-center justify-content-lg-end gap-2">
-                                <button class="btn btn-lg btn-touch" ng-class="vm.timerRunning ? 'btn-warning' : 'btn-success'" ng-click="vm.toggleTimer()">
+                                <button class="btn btn-lg btn-touch" 
+                                        ng-class="vm.timerRunning ? 'btn-warning text-dark' : 'btn-emerald'" 
+                                        ng-click="vm.toggleTimer()">
                                     <i class="fa-solid" ng-class="vm.timerRunning ? 'fa-pause' : 'fa-play'"></i>
-                                    <span ng-bind="vm.timerRunning ? 'Pause' : 'Resume'"></span>
+                                    <span ng-bind="vm.timerRunning ? 'Pause Practice' : 'Resume Practice'"></span>
                                 </button>
                                 <button class="btn btn-lg btn-danger btn-touch" ng-click="vm.stopAndSaveSession()">
-                                    <i class="fa-solid fa-square"></i> Save Session
-                                </button>
-                                <button class="btn btn-lg btn-outline-light btn-touch" ng-click="vm.cancelTimer()">
-                                    <i class="fa-solid fa-xmark"></i>
+                                    <i class="fa-solid fa-square"></i> Stop & Save Session
                                 </button>
                             </div>
                         </div>
@@ -239,219 +296,253 @@
             </div>
         </div>
 
+        <!-- Main Navigation Tabs -->
         <ul class="nav nav-pills mb-4 gap-2 border-bottom border-secondary pb-3" id="mainTabs">
             <li class="nav-item">
-                <button class="nav-link text-white btn-touch" ng-class="{'active bg-primary': vm.currentTab === 'practice'}" ng-click="vm.switchTab('practice')">
+                <button class="nav-link text-white btn-touch" 
+                        ng-class="{'active bg-primary fw-bold': vm.currentTab === 'practice'}" 
+                        ng-click="vm.switchTab('practice')">
                     <i class="fa-solid fa-compact-disc"></i> Practice Dashboard
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link text-white btn-touch" ng-class="{'active bg-primary': vm.currentTab === 'metronome'}" ng-click="vm.switchTab('metronome')">
+                <button class="nav-link text-white btn-touch" 
+                        ng-class="{'active bg-primary fw-bold': vm.currentTab === 'metronome'}" 
+                        ng-click="vm.switchTab('metronome')">
                     <i class="fa-solid fa-sliders"></i> Metronome
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link text-white btn-touch" ng-class="{'active bg-primary': vm.currentTab === 'logs'}" ng-click="vm.switchTab('logs')">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Practice History
+                <button class="nav-link text-white btn-touch" 
+                        ng-class="{'active bg-primary fw-bold': vm.currentTab === 'logs'}" 
+                        ng-click="vm.switchTab('logs')">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Practice History Log
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link text-white btn-touch" ng-class="{'active bg-primary': vm.currentTab === 'analytics'}" ng-click="vm.switchTab('analytics')">
-                    <i class="fa-solid fa-chart-pivot"></i> Analytics & Pivot
+                <button class="nav-link text-white btn-touch" 
+                        ng-class="{'active bg-primary fw-bold': vm.currentTab === 'analytics'}" 
+                        ng-click="vm.switchTab('analytics')">
+                    <i class="fa-solid fa-chart-pie"></i> Pivot Table & Charts
                 </button>
             </li>
         </ul>
 
+        <!-- TAB 1: PRACTICE DASHBOARD -->
         <section ng-show="vm.currentTab === 'practice'">
             <div class="row g-4">
-                <!-- Left Column: Quick Stats & Category Filters -->
+                <!-- Left Sidebar: Category Filter & Today's Stats -->
                 <div class="col-lg-3">
+                    <!-- Categories Card -->
                     <div class="card card-pt p-3 mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold text-uppercase text-muted mb-0"><i class="fa-solid fa-tags me-1"></i> Categories</h6>
-                            <button class="btn btn-sm btn-outline-primary rounded-circle" ng-click="vm.openCategoryModal()" title="Add Category">
+                            <h6 class="fw-bold text-uppercase text-light mb-0"><i class="fa-solid fa-tags text-info me-1"></i> Categories</h6>
+                            <button class="btn btn-sm btn-outline-info rounded-circle" ng-click="vm.openCategoryModal()" title="Add Category">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
                         </div>
                         <div class="d-flex flex-column gap-2">
-                            <button class="btn btn-sm text-start d-flex justify-content-between align-items-center"
-                                    ng-class="vm.selectedCategoryFilter === null ? 'btn-primary' : 'btn-outline-secondary text-white'"
+                            <button class="btn btn-sm text-start d-flex justify-content-between align-items-center fw-semibold py-2 px-3"
+                                    ng-class="vm.selectedCategoryFilter === null ? 'btn-info text-dark font-bold' : 'btn-outline-secondary text-white'"
                                     ng-click="vm.selectedCategoryFilter = null">
-                                <span><i class="fa-solid fa-layer-group me-2"></i> All Categories</span>
-                                <span class="badge bg-dark rounded-pill" ng-bind="vm.pieces.length"></span>
+                                <span><i class="fa-solid fa-layer-group me-2"></i> All Pieces</span>
+                                <span class="badge bg-dark text-white rounded-pill" ng-bind="vm.pieces.length"></span>
                             </button>
+
                             <div ng-repeat="cat in vm.categories" class="d-flex align-items-center gap-1">
-                                <button class="btn btn-sm text-start flex-grow-1 d-flex justify-content-between align-items-center"
-                                        ng-class="vm.selectedCategoryFilter === cat.id ? 'btn-primary' : 'btn-outline-secondary text-white'"
+                                <button class="btn btn-sm text-start flex-grow-1 d-flex justify-content-between align-items-center fw-semibold py-2 px-3"
+                                        ng-class="vm.selectedCategoryFilter === cat.id ? 'btn-info text-dark font-bold' : 'btn-outline-secondary text-white'"
                                         ng-click="vm.selectedCategoryFilter = cat.id">
                                     <span>
                                         <i class="fa-solid me-2" ng-class="cat.icon || 'fa-folder'" ng-style="{'color': cat.color}"></i>
                                         <span ng-bind="cat.name"></span>
                                     </span>
-                                    <span class="badge bg-dark rounded-pill" ng-bind="vm.getPieceCountForCategory(cat.id)"></span>
+                                    <span class="badge bg-dark text-white rounded-pill" ng-bind="vm.getPieceCountForCategory(cat.id)"></span>
                                 </button>
-                                <button class="btn btn-sm text-muted" ng-click="vm.openCategoryModal(cat)" title="Edit Category">
-                                    <i class="fa-solid fa-pen"></i>
+                                <button class="btn btn-sm text-secondary" ng-click="vm.openCategoryModal(cat)" title="Edit Category">
+                                    <i class="fa-solid fa-pen text-light"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Quick Daily Summary Widget -->
+                    <!-- Today's Total Summary Widget -->
                     <div class="card card-pt p-3">
-                        <h6 class="fw-bold text-uppercase text-muted mb-3"><i class="fa-solid fa-calendar-day me-1"></i> Today's Summary</h6>
+                        <h6 class="fw-bold text-uppercase text-light mb-3"><i class="fa-solid fa-calendar-day text-warning me-1"></i> Today's Practice</h6>
                         <div class="text-center py-2">
-                            <div class="mono h2 fw-bold text-indigo-400 text-primary mb-1" ng-bind="vm.formatDuration(vm.getTodayTotalSeconds())">00:00:00</div>
-                            <p class="text-muted small mb-0">Total Time Practiced Today</p>
+                            <div class="mono h2 fw-bold text-info mb-1" ng-bind="vm.formatDuration(vm.getTodayTotalSeconds())">00:00:00</div>
+                            <p class="text-light small mb-0">Total Time Practiced Today</p>
                         </div>
                         <hr class="border-secondary">
                         <div class="d-flex justify-content-between text-sm">
-                            <span class="text-muted">Sessions Completed:</span>
-                            <strong ng-bind="vm.getTodaySessionCount()">0</strong>
+                            <span class="text-light">Sessions Completed:</span>
+                            <strong class="text-white" ng-bind="vm.getTodaySessionCount()">0</strong>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column: Piece List & Interactive Task Switcher -->
+                <!-- Right Side: Repertoire Pieces List & Piece-Level Start Buttons -->
                 <div class="col-lg-9">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="fw-bold mb-0">Repertoire & Tasks</h4>
-                        <button class="btn btn-primary btn-touch" ng-click="vm.openPieceModal()">
+                        <h4 class="fw-bold mb-0 text-white"><i class="fa-solid fa-music text-info me-2"></i> Repertoire Pieces</h4>
+                        <button class="btn btn-sky btn-touch" ng-click="vm.openPieceModal()">
                             <i class="fa-solid fa-plus me-1"></i> Add New Piece
                         </button>
                     </div>
 
-                    <!-- Pieces Cards Loop -->
+                    <!-- Repertoire Cards Loop -->
                     <div class="d-flex flex-column gap-3">
                         <div ng-repeat="piece in vm.filteredPieces = (vm.pieces | filter: vm.pieceCategoryFilter)" 
-                             class="card card-pt card-pt-interactive p-4">
+                             class="card card-pt p-4"
+                             ng-class="{'card-pt-active': vm.activePiece && vm.activePiece.id === piece.id}">
                             
-                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
                                 <div>
-                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
                                         <span class="badge badge-cat" 
                                               ng-style="{'background-color': vm.getCategory(piece.categoryId).color}"
                                               ng-bind="vm.getCategory(piece.categoryId).name"></span>
-                                        <span class="text-muted small" ng-bind="piece.composer"></span>
+                                        <span class="text-light fw-medium small" ng-bind="piece.composer"></span>
                                     </div>
-                                    <h4 class="fw-bold mb-1" ng-bind="piece.title"></h4>
-                                    <p class="text-muted small mb-0" ng-if="piece.targetBars">
-                                        <i class="fa-solid fa-music me-1"></i> Target Bars: <span ng-bind="piece.targetBars"></span>
+                                    <h3 class="fw-bold mb-1 text-white" ng-bind="piece.title"></h3>
+                                    <p class="text-sub small mb-0" ng-if="piece.targetBars">
+                                        <i class="fa-solid fa-bookmark text-warning me-1"></i> Target Bars: <span class="fw-bold text-white" ng-bind="piece.targetBars"></span>
                                     </p>
                                 </div>
 
+                                <!-- PIECE-LEVEL PRACTICE START / SWITCH BUTTON -->
                                 <div class="d-flex align-items-center gap-2">
-                                    <button class="btn btn-sm btn-outline-light" ng-click="vm.openPieceModal(piece)" title="Edit Piece">
-                                        <i class="fa-solid fa-pen"></i> Edit Piece
+                                    <button class="btn btn-touch" 
+                                            ng-class="(vm.activePiece && vm.activePiece.id === piece.id) ? 'btn-emerald shadow-lg' : 'btn-sky'"
+                                            ng-click="vm.startPracticeForPiece(piece)">
+                                        <i class="fa-solid" ng-class="(vm.activePiece && vm.activePiece.id === piece.id) ? 'fa-circle-pause' : 'fa-play'"></i>
+                                        <span ng-bind="(vm.activePiece && vm.activePiece.id === piece.id) ? (vm.timerRunning ? 'Practicing (Pause)' : 'Paused (Resume)') : 'Start Practice Piece'"></span>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" ng-click="vm.confirmDeletePiece(piece)" title="Delete Piece">
+
+                                    <button class="btn btn-outline-light btn-sm p-2" ng-click="vm.openPieceModal(piece)" title="Edit Piece">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm p-2" ng-click="vm.confirmDeletePiece(piece)" title="Delete Piece">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Expandable Checklist / Task Switcher -->
-                            <div class="border-top border-secondary pt-3 mt-2">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-semibold text-muted text-uppercase text-xs">Practice Tasks / Focus Areas</span>
-                                    <button class="btn btn-link btn-sm text-decoration-none text-indigo-400 p-0" ng-click="vm.addNewTaskToPiece(piece)">
-                                        <i class="fa-solid fa-plus"></i> Add Focus Task
+                            <!-- EXPANDABLE CHECKLIST ITEMS (BARS/TASKS) -->
+                            <div class="border-top border-secondary pt-3 mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2 cursor-pointer" ng-click="piece.isExpanded = !piece.isExpanded">
+                                    <span class="fw-bold text-info text-uppercase text-xs d-flex align-items-center gap-2">
+                                        <i class="fa-solid" ng-class="piece.isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                                        <i class="fa-solid fa-list-check"></i> Practice Checklist / Focus Areas 
+                                        <span class="badge bg-dark text-white ms-1" ng-bind="(piece.checklist || []).length"></span>
+                                    </span>
+                                    <button class="btn btn-sm btn-link text-info text-decoration-none p-0 fw-semibold" 
+                                            ng-click="$event.stopPropagation(); vm.addChecklistItem(piece)">
+                                        <i class="fa-solid fa-plus-circle me-1"></i> Add Item
                                     </button>
                                 </div>
 
-                                <div class="d-flex flex-column gap-2">
-                                    <div ng-repeat="task in piece.tasks" class="d-flex align-items-center justify-content-between p-2 rounded bg-dark border border-secondary">
-                                        <div class="d-flex align-items-center gap-2 flex-grow-1 me-2">
-                                            <input type="checkbox" class="form-check-input mt-0" ng-model="task.completed" ng-change="vm.saveData()">
-                                            <input type="text" class="form-control form-control-sm bg-transparent text-white border-0" 
-                                                   ng-model="task.title" ng-blur="vm.saveData()" placeholder="Task title...">
-                                        </div>
+                                <!-- Collapsible Checklist Content -->
+                                <div ng-show="piece.isExpanded" class="mt-3 d-flex flex-column gap-2">
+                                    <div ng-repeat="item in piece.checklist track by $index" 
+                                         class="d-flex align-items-center gap-2 p-2 rounded bg-dark border border-secondary">
+                                        
+                                        <!-- Checkbox -->
+                                        <input type="checkbox" 
+                                               class="form-check-input mt-0 ms-1" 
+                                               style="width: 22px; height: 22px; cursor: pointer;"
+                                               ng-model="item.completed" 
+                                               ng-change="vm.saveData()">
 
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="text-muted text-xs d-none d-md-inline" ng-if="task.barsWorked">
-                                                Bars <span ng-bind="task.barsWorked"></span>
-                                            </span>
-                                            <!-- One-Tap Start / Switch Task Timer Button -->
-                                            <button class="btn btn-sm btn-touch" 
-                                                    ng-class="(vm.activeTask && vm.activeTask.id === task.id) ? 'btn-success' : 'btn-outline-primary'"
-                                                    ng-click="vm.selectAndStartTask(piece, task)">
-                                                <i class="fa-solid" ng-class="(vm.activeTask && vm.activeTask.id === task.id) ? 'fa-spinner fa-spin' : 'fa-play'"></i>
-                                                <span ng-bind="(vm.activeTask && vm.activeTask.id === task.id) ? 'Active' : 'Start'"></span>
-                                            </button>
-                                            <button class="btn btn-sm text-danger px-1" ng-click="vm.removeTaskFromPiece(piece, $index)" title="Remove task">
-                                                <i class="fa-solid fa-times"></i>
-                                            </button>
-                                        </div>
+                                        <!-- Editable Text Input -->
+                                        <input type="text" 
+                                               class="checklist-item-input flex-grow-1"
+                                               ng-class="{'checklist-completed': item.completed}"
+                                               ng-model="item.text" 
+                                               ng-blur="vm.saveData()" 
+                                               placeholder="Type bar numbers or focus area (e.g., mm. 1-16 hands separate)...">
+
+                                        <!-- Delete Item Button -->
+                                        <button class="btn btn-sm text-danger px-2" ng-click="vm.removeChecklistItem(piece, $index)" title="Remove item">
+                                            <i class="fa-solid fa-xmark fs-5"></i>
+                                        </button>
+                                    </div>
+
+                                    <div ng-if="!piece.checklist || piece.checklist.length === 0" class="text-light small italic py-1 ms-2">
+                                        No checklist items added yet. Click "Add Item" to list specific bars or focus points.
                                     </div>
                                 </div>
                             </div>
+
                         </div>
 
-                        <div ng-if="vm.filteredPieces.length === 0" class="card card-pt p-5 text-center text-muted">
+                        <div ng-if="vm.filteredPieces.length === 0" class="card card-pt p-5 text-center text-light">
                             <i class="fa-solid fa-music fs-1 mb-3 text-secondary"></i>
-                            <p class="mb-0">No pieces found in this category. Click "Add New Piece" above to begin!</p>
+                            <h5 class="fw-bold">No pieces found in this category</h5>
+                            <p class="mb-0 text-sub">Click "Add New Piece" above to build your practice repertoire!</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- TAB 2: INTEGRATED METRONOME -->
         <section ng-show="vm.currentTab === 'metronome'">
             <div class="row justify-content-center">
                 <div class="col-lg-8 col-xl-6">
                     <div class="card card-pt p-4 p-md-5 text-center">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="fw-bold mb-0"><i class="fa-solid fa-metronome me-2 text-primary"></i> Integrated Metronome</h4>
-                            <span class="badge bg-secondary" ng-bind="vm.metronomeRunning ? 'Playing' : 'Stopped'"></span>
+                            <h4 class="fw-bold mb-0 text-white"><i class="fa-solid fa-metronome me-2 text-info"></i> Audio Metronome</h4>
+                            <span class="badge fs-6 px-3 py-2" ng-class="vm.metronomeRunning ? 'bg-success text-dark fw-bold' : 'bg-secondary text-white'" ng-bind="vm.metronomeRunning ? 'ACTIVE' : 'OFF'"></span>
                         </div>
 
-                        <!-- Visual Beat Pulse Display -->
+                        <!-- Visual Beat Lights -->
                         <div class="d-flex justify-content-center align-items-center gap-3 my-4">
                             <div ng-repeat="b in vm.getBeatArray() track by $index" 
-                                 class="rounded-circle border border-secondary d-flex align-items-center justify-content-center font-bold"
-                                 ng-class="{'beat-active': vm.currentBeat === $index, 'bg-primary text-white': $index === 0 && vm.currentBeat === 0}"
-                                 style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                 class="rounded-circle border border-secondary d-flex align-items-center justify-content-center fw-bold text-white"
+                                 ng-class="{'beat-active': vm.currentBeat === $index, 'bg-info text-dark': $index === 0 && vm.currentBeat === 0}"
+                                 style="width: 55px; height: 55px; font-size: 1.3rem;">
                                 <span ng-bind="$index + 1"></span>
                             </div>
                         </div>
 
                         <!-- BPM Display & Slider -->
                         <div class="my-4">
-                            <div class="mono display-1 fw-bold text-indigo-400 text-primary mb-2" ng-bind="vm.metronomeBpm">120</div>
-                            <p class="text-muted text-uppercase tracking-widest fw-semibold">Beats Per Minute</p>
+                            <div class="mono display-1 fw-bold text-info mb-2" ng-bind="vm.metronomeBpm">120</div>
+                            <p class="text-light text-uppercase tracking-widest fw-semibold">Beats Per Minute (BPM)</p>
                             
-                            <div class="d-flex align-items-center justify-content-center gap-3 mt-3">
-                                <button class="btn btn-outline-secondary rounded-circle" ng-click="vm.adjustBpm(-5)">-5</button>
-                                <button class="btn btn-outline-secondary rounded-circle" ng-click="vm.adjustBpm(-1)">-1</button>
-                                <input type="range" class="form-range mx-2" min="30" max="280" ng-model="vm.metronomeBpm" ng-change="vm.updateMetronomeTempo()">
-                                <button class="btn btn-outline-secondary rounded-circle" ng-click="vm.adjustBpm(1)">+1</button>
-                                <button class="btn btn-outline-secondary rounded-circle" ng-click="vm.adjustBpm(5)">+5</button>
+                            <div class="d-flex align-items-center justify-content-center gap-2 mt-4">
+                                <button class="btn btn-outline-light rounded-circle fw-bold" style="width: 45px; height: 45px;" ng-click="vm.adjustBpm(-5)">-5</button>
+                                <button class="btn btn-outline-light rounded-circle fw-bold" style="width: 45px; height: 45px;" ng-click="vm.adjustBpm(-1)">-1</button>
+                                <input type="range" class="form-range mx-3" min="30" max="280" ng-model="vm.metronomeBpm" ng-change="vm.updateMetronomeTempo()">
+                                <button class="btn btn-outline-light rounded-circle fw-bold" style="width: 45px; height: 45px;" ng-click="vm.adjustBpm(1)">+1</button>
+                                <button class="btn btn-outline-light rounded-circle fw-bold" style="width: 45px; height: 45px;" ng-click="vm.adjustBpm(5)">+5</button>
                             </div>
                         </div>
 
-                        <!-- Metronome Settings Grid -->
+                        <!-- Metronome Settings -->
                         <div class="row g-3 my-3 text-start bg-dark p-3 rounded-3 border border-secondary">
                             <div class="col-6">
-                                <label class="form-label text-muted small">Beats / Measure</label>
+                                <label class="form-label text-light small fw-bold">Time Signature</label>
                                 <select class="form-select form-select-pt" ng-model="vm.beatsPerMeasure" ng-change="vm.updateMetronomeTempo()">
-                                    <option ng-value="2">2 Beats</option>
-                                    <option ng-value="3">3 Beats</option>
-                                    <option ng-value="4">4 Beats (Standard)</option>
-                                    <option ng-value="6">6 Beats</option>
+                                    <option ng-value="2">2 / 4 Time</option>
+                                    <option ng-value="3">3 / 4 Time</option>
+                                    <option ng-value="4">4 / 4 Time (Standard)</option>
+                                    <option ng-value="6">6 / 8 Time</option>
                                 </select>
                             </div>
                             <div class="col-6">
-                                <label class="form-label text-muted small">Pitch Accent</label>
+                                <label class="form-label text-light small fw-bold">Beat Accent Tone</label>
                                 <select class="form-select form-select-pt" ng-model="vm.accentFirstBeat">
                                     <option ng-value="true">Accent Beat 1 (High Tone)</option>
-                                    <option ng-value="false">Uniform Tone</option>
+                                    <option ng-value="false">Uniform Click Tone</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- Metronome Play / Pause Button -->
+                        <!-- Metronome Toggle Button -->
                         <div class="d-grid mt-4">
-                            <button class="btn btn-lg btn-touch" ng-class="vm.metronomeRunning ? 'btn-danger' : 'btn-primary'" ng-click="vm.toggleMetronome()">
+                            <button class="btn btn-lg btn-touch" ng-class="vm.metronomeRunning ? 'btn-danger' : 'btn-emerald'" ng-click="vm.toggleMetronome()">
                                 <i class="fa-solid" ng-class="vm.metronomeRunning ? 'fa-stop' : 'fa-play'"></i>
                                 <span ng-bind="vm.metronomeRunning ? 'Stop Metronome' : 'Start Metronome'"></span>
                             </button>
@@ -461,12 +552,13 @@
             </div>
         </section>
 
+        <!-- TAB 3: PRACTICE HISTORY LOGS -->
         <section ng-show="vm.currentTab === 'logs'">
             <div class="card card-pt p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                    <h4 class="fw-bold mb-0">Practice Sessions History</h4>
-                    <button class="btn btn-sm btn-outline-primary" ng-click="vm.openAddManualLogModal()">
-                        <i class="fa-solid fa-plus me-1"></i> Retroactive Manual Log Entry
+                    <h4 class="fw-bold mb-0 text-white"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i> Practice Sessions History</h4>
+                    <button class="btn btn-sm btn-sky" ng-click="vm.openAddManualLogModal()">
+                        <i class="fa-solid fa-plus me-1"></i> Retroactive Log Entry
                     </button>
                 </div>
 
@@ -474,45 +566,45 @@
                     <table class="table table-pt align-middle">
                         <thead>
                             <tr>
-                                <th>Date & Time</th>
-                                <th>Piece / Task</th>
+                                <th>Date</th>
+                                <th>Start / End Time</th>
+                                <th>Piece Title</th>
                                 <th>Category</th>
                                 <th>Duration</th>
-                                <th>Bars Worked</th>
-                                <th>BPM Range</th>
+                                <th>Metronome BPM</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="log in vm.logs | orderBy:'-startTime'">
+                            <tr ng-repeat="log in vm.logs | orderBy:'-startTimeTimestamp'">
                                 <td>
-                                    <div class="fw-semibold" ng-bind="log.date"></div>
-                                    <div class="text-muted text-xs mono" ng-bind="log.timeFormatted"></div>
+                                    <div class="fw-bold text-white" ng-bind="log.date"></div>
                                 </td>
                                 <td>
-                                    <div class="fw-bold" ng-bind="log.pieceTitle"></div>
-                                    <div class="text-muted small" ng-bind="log.taskTitle || 'General Practice'"></div>
+                                    <div class="mono small text-info fw-bold" ng-bind="log.startTimeFormatted + ' - ' + log.endTimeFormatted"></div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-white" ng-bind="log.pieceTitle"></div>
                                 </td>
                                 <td>
                                     <span class="badge badge-cat" ng-style="{'background-color': log.categoryColor}" ng-bind="log.categoryName"></span>
                                 </td>
-                                <td class="mono fw-bold" ng-bind="vm.formatDuration(log.durationSeconds)"></td>
-                                <td ng-bind="log.barsWorked || '-'"></td>
-                                <td class="mono">
-                                    <span ng-if="log.minBpm && log.maxBpm" ng-bind="log.minBpm + ' - ' + log.maxBpm + ' BPM'"></span>
-                                    <span ng-if="!log.minBpm" class="text-muted">-</span>
+                                <td class="mono fw-bold text-emerald" style="color: #34d399;" ng-bind="vm.formatDuration(log.durationSeconds)"></td>
+                                <td class="mono text-light">
+                                    <span ng-if="log.minBpm && log.maxBpm" class="badge bg-dark text-info border border-secondary" ng-bind="log.minBpm + ' - ' + log.maxBpm + ' BPM'"></span>
+                                    <span ng-if="!log.minBpm" class="text-secondary">-</span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-light me-1" ng-click="vm.openEditLogModal(log)" title="Edit Entry">
+                                    <button class="btn btn-sm btn-outline-light me-1" ng-click="vm.openEditLogModal(log)" title="Edit Log">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" ng-click="vm.confirmDeleteLog(log)" title="Delete Entry">
+                                    <button class="btn btn-sm btn-outline-danger" ng-click="vm.confirmDeleteLog(log)" title="Delete Log">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </td>
                             </tr>
                             <tr ng-if="vm.logs.length === 0">
-                                <td colspan="7" class="text-center py-4 text-muted">No practice logs available yet. Start practicing above!</td>
+                                <td colspan="7" class="text-center py-4 text-light">No practice logs available yet. Start practicing on the dashboard!</td>
                             </tr>
                         </tbody>
                     </table>
@@ -520,68 +612,67 @@
             </div>
         </section>
 
+        <!-- TAB 4: PIVOT TABLE & CHARTS ANALYTICS -->
         <section ng-show="vm.currentTab === 'analytics'">
             <div class="row g-4">
-                <!-- Chart 1: Practice Time Trend -->
+                <!-- Practice Trend Chart -->
                 <div class="col-lg-8">
                     <div class="card card-pt p-4 h-100">
-                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-line text-primary me-2"></i> Practice Time Trend (Minutes)</h5>
+                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-chart-line text-info me-2"></i> Daily Practice Minutes</h5>
                         <div style="position: relative; min-height: 280px;">
                             <canvas id="trendChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- Chart 2: Category Breakdown -->
+                <!-- Category Breakdown Chart -->
                 <div class="col-lg-4">
                     <div class="card card-pt p-4 h-100">
-                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie text-indigo-400 text-primary me-2"></i> Category Distribution</h5>
+                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-chart-pie text-info me-2"></i> Category Distribution</h5>
                         <div style="position: relative; min-height: 280px;" class="d-flex align-items-center justify-content-center">
                             <canvas id="categoryChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- Interactive Pivot Table Analytics Widget -->
+                <!-- DYNAMIC PIVOT TABLE MATRIX -->
                 <div class="col-12">
                     <div class="card card-pt p-4">
-                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-table-cells me-2 text-indigo-400 text-primary"></i> Interactive Practice Pivot Table</h5>
+                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-table-cells me-2 text-info"></i> Practice Time Pivot Matrix</h5>
                         
                         <div class="row g-3 mb-4 bg-dark p-3 rounded border border-secondary">
-                            <div class="col-md-4">
-                                <label class="form-label text-muted small">Row Grouping</label>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Row Dimension</label>
                                 <select class="form-select form-select-pt" ng-model="vm.pivotRowKey" ng-change="vm.rebuildPivotTable()">
                                     <option value="pieceTitle">Piece Title</option>
                                     <option value="categoryName">Category</option>
                                     <option value="date">Date</option>
-                                    <option value="month">Month</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label text-muted small">Column Metric / Grouping</label>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Column Dimension</label>
                                 <select class="form-select form-select-pt" ng-model="vm.pivotColKey" ng-change="vm.rebuildPivotTable()">
                                     <option value="categoryName">Category</option>
-                                    <option value="month">Month</option>
                                     <option value="totalOnly">Total Time Only</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- Rendered Pivot Table -->
+                        <!-- Rendered Pivot Table Matrix -->
                         <div class="table-responsive">
                             <table class="table table-pt table-bordered text-center align-middle">
                                 <thead>
                                     <tr>
                                         <th class="text-start" ng-bind="vm.pivotRowKey | uppercase"></th>
                                         <th ng-repeat="col in vm.pivotData.columns" ng-bind="col"></th>
-                                        <th class="table-active">Total Duration</th>
+                                        <th class="table-active text-info">TOTAL TIME</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="row in vm.pivotData.rows">
-                                        <td class="text-start fw-bold" ng-bind="row.name"></td>
-                                        <td ng-repeat="col in vm.pivotData.columns" class="mono" ng-bind="vm.formatDuration(row.cols[col] || 0)"></td>
-                                        <td class="table-active mono fw-bold text-primary" ng-bind="vm.formatDuration(row.totalSeconds)"></td>
+                                        <td class="text-start fw-bold text-white" ng-bind="row.name"></td>
+                                        <td ng-repeat="col in vm.pivotData.columns" class="mono text-light" ng-bind="vm.formatDuration(row.cols[col] || 0)"></td>
+                                        <td class="table-active mono fw-bold text-emerald" style="color: #34d399;" ng-bind="vm.formatDuration(row.totalSeconds)"></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -593,149 +684,143 @@
 
     </main>
 
-
-    <!-- MODAL 1: CONFIRMATION MODAL (FIXTURE FOR THE RAW TEMPLATE BUG) -->
-    <!-- Notice ng-bind="vm.confirmTitle || 'Confirm Action'" which prevents any raw curly braces from rendering -->
+    <!-- MODAL 1: CONFIRMATION MODAL -->
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-pt">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" ng-bind="vm.confirmTitle || 'Confirm Action'"></h5>
+                    <h5 class="modal-title fw-bold text-white" ng-bind="vm.confirmTitle || 'Confirm Action'"></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-0" ng-bind="vm.confirmMessage || 'Are you sure you want to perform this action?'"></p>
+                    <p class="mb-0 text-light fs-6" ng-bind="vm.confirmMessage || 'Are you sure you want to proceed?'"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" ng-click="vm.executeConfirmAction()" data-bs-dismiss="modal">Confirm</button>
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger fw-bold" ng-click="vm.executeConfirmAction()" data-bs-dismiss="modal">Confirm</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 2: ADD / EDIT PIECE MODAL -->
+    <!-- MODAL 2: ADD / EDIT REPERTOIRE PIECE MODAL -->
     <div class="modal fade" id="pieceModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-pt">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" ng-bind="vm.editingPiece.id ? 'Edit Repertoire Piece' : 'Add New Piece'"></h5>
+                    <h5 class="modal-title fw-bold text-white" ng-bind="vm.editingPiece.id ? 'Edit Repertoire Piece' : 'Add New Piece'"></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form ng-submit="vm.savePieceForm()">
                     <div class="modal-body d-flex flex-column gap-3">
                         <div>
-                            <label class="form-label text-muted small">Piece Title *</label>
+                            <label class="form-label text-light small fw-bold">Piece Title *</label>
                             <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.title" required placeholder="e.g. Moonlight Sonata">
                         </div>
                         <div>
-                            <label class="form-label text-muted small">Composer / Artist</label>
+                            <label class="form-label text-light small fw-bold">Composer / Artist</label>
                             <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.composer" placeholder="e.g. Ludwig van Beethoven">
                         </div>
                         <div>
-                            <label class="form-label text-muted small">Category *</label>
+                            <label class="form-label text-light small fw-bold">Category *</label>
                             <select class="form-select form-select-pt" ng-model="vm.editingPiece.categoryId" required>
                                 <option ng-repeat="cat in vm.categories" ng-value="cat.id" ng-bind="cat.name"></option>
                             </select>
                         </div>
                         <div>
-                            <label class="form-label text-muted small">Target Bars / Measures</label>
-                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.targetBars" placeholder="e.g. mm. 1-32 or Full Piece">
+                            <label class="form-label text-light small fw-bold">Target Bars / Focus Area</label>
+                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.targetBars" placeholder="e.g. mm. 1-64 or Full Piece">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Piece</button>
+                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sky fw-bold">Save Piece</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 3: CATEGORY EDIT MODAL -->
+    <!-- MODAL 3: ADD / EDIT CATEGORY MODAL -->
     <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-pt">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" ng-bind="vm.editingCategory.id ? 'Edit Category' : 'New Category'"></h5>
+                    <h5 class="modal-title fw-bold text-white" ng-bind="vm.editingCategory.id ? 'Edit Category' : 'New Category'"></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form ng-submit="vm.saveCategoryForm()">
                     <div class="modal-body d-flex flex-column gap-3">
                         <div>
-                            <label class="form-label text-muted small">Category Name</label>
+                            <label class="form-label text-light small fw-bold">Category Name</label>
                             <input type="text" class="form-control form-control-pt" ng-model="vm.editingCategory.name" required placeholder="Category Name">
                         </div>
                         <div>
-                            <label class="form-label text-muted small">Badge Color</label>
-                            <input type="color" class="form-control form-control-color w-100 bg-dark" ng-model="vm.editingCategory.color">
+                            <label class="form-label text-light small fw-bold">Badge Color</label>
+                            <input type="color" class="form-control form-control-color w-100 bg-dark border-secondary" ng-model="vm.editingCategory.color">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Category</button>
+                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sky fw-bold">Save Category</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 4: EDIT PRACTICE LOG MODAL -->
+    <!-- MODAL 4: MANUAL / EDIT PRACTICE LOG MODAL -->
     <div class="modal fade" id="logModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-pt">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" ng-bind="vm.editingLog.id ? 'Edit Practice Entry' : 'Manual Log Entry'"></h5>
+                    <h5 class="modal-title fw-bold text-white" ng-bind="vm.editingLog.id ? 'Edit Practice Entry' : 'Manual Log Entry'"></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form ng-submit="vm.saveLogForm()">
                     <div class="modal-body d-flex flex-column gap-3">
                         <div>
-                            <label class="form-label text-muted small">Piece Title</label>
+                            <label class="form-label text-light small fw-bold">Piece Title</label>
                             <input type="text" class="form-control form-control-pt" ng-model="vm.editingLog.pieceTitle" required>
                         </div>
                         <div>
-                            <label class="form-label text-muted small">Date</label>
+                            <label class="form-label text-light small fw-bold">Date</label>
                             <input type="date" class="form-control form-control-pt" ng-model="vm.editingLog.date" required>
                         </div>
                         <div>
-                            <label class="form-label text-muted small">Duration (Minutes)</label>
+                            <label class="form-label text-light small fw-bold">Duration (Minutes)</label>
                             <input type="number" class="form-control form-control-pt" ng-model="vm.editingLog.durationMinutes" min="1" required>
-                        </div>
-                        <div>
-                            <label class="form-label text-muted small">Bars Worked</label>
-                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingLog.barsWorked" placeholder="e.g. mm 12-24">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Log</button>
+                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sky fw-bold">Save Entry</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 5: BACKUP & DATA IMPORT/EXPORT MODAL -->
+    <!-- MODAL 5: DATA MANAGEMENT & BACKUP MODAL -->
     <div class="modal fade" id="backupModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-pt">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Data Management & Backup</h5>
+                    <h5 class="modal-title fw-bold text-white">Data Backup & Restore</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body d-flex flex-column gap-3">
-                    <p class="text-muted small">Export all your practice logs, categories, and pieces to a JSON file or restore from a previous backup.</p>
+                    <p class="text-light small">Export your practice logs, repertoire pieces, and categories to JSON or restore from a backup file.</p>
                     <div class="d-grid gap-2">
-                        <button class="btn btn-outline-primary" ng-click="vm.exportBackupJSON()">
+                        <button class="btn btn-sky fw-bold py-2" ng-click="vm.exportBackupJSON()">
                             <i class="fa-solid fa-download me-2"></i> Export Data Backup (JSON)
                         </button>
-                        <label class="btn btn-outline-secondary">
+                        <label class="btn btn-outline-light fw-bold py-2">
                             <i class="fa-solid fa-upload me-2"></i> Import Backup File
                             <input type="file" accept=".json" style="display: none;" onchange="angular.element(this).scope().vm.importBackupJSON(event)">
                         </label>
-                        <button class="btn btn-outline-danger" ng-click="vm.confirmResetData()">
-                            <i class="fa-solid fa-rotate-left me-2"></i> Reset to Default Sample Data
+                        <button class="btn btn-outline-danger fw-bold py-2" ng-click="vm.confirmResetData()">
+                            <i class="fa-solid fa-rotate-left me-2"></i> Reset to Sample Data
                         </button>
                     </div>
                 </div>
@@ -744,13 +829,13 @@
     </div>
 
     <script>
-        var app = angular.module('practiceApp', []);
+        var app = angular.module('practiceTempoApp', []);
 
         app.controller('PracticeController', ['$scope', '$timeout', '$interval', function($scope, $timeout, $interval) {
             var vm = this;
 
             /* -----------------------------------------------------------------
-             * STATE INITIALIZATION & DEFAULT DATA
+             * STATE INITIALIZATION & DEFAULT SEED DATA
              * ----------------------------------------------------------------- */
             vm.currentTab = 'practice';
             vm.selectedCategoryFilter = null;
@@ -766,19 +851,17 @@
             var audioCtx = null;
             var metronomeTimer = null;
 
-            // Active Practice Timer State (Background Resilient)
-            vm.activeTask = null;
+            // Active Practice Timer State (PIECE LEVEL)
             vm.activePiece = null;
-            vm.activeCategory = null;
             vm.timerRunning = false;
-            vm.startTime = 0;
+            vm.sessionStartTimestamp = 0;
             vm.elapsedBeforePause = 0;
             vm.currentElapsedSeconds = 0;
-            vm.activeMinBpm = null;
-            vm.activeMaxBpm = null;
+            vm.sessionMinBpm = null;
+            vm.sessionMaxBpm = null;
             var timerInterval = null;
 
-            // Modal Title & Data Bindings (Guaranteed digest execution)
+            // Modal Title & Dialog State Bindings
             vm.confirmTitle = '';
             vm.confirmMessage = '';
             vm.confirmCallback = null;
@@ -786,9 +869,7 @@
             vm.editingCategory = {};
             vm.editingLog = {};
 
-            // Bootstrap Modal Instances
             var modalInstances = {};
-
             function getModal(id) {
                 var el = document.getElementById(id);
                 if (!el) return null;
@@ -798,9 +879,6 @@
                 return modalInstances[id];
             }
 
-            /* -----------------------------------------------------------------
-             * MODAL TRIGGER HELPERS WITH DIGEST SAFE WRAPPERS ($timeout)
-             * ----------------------------------------------------------------- */
             vm.openConfirmModal = function(title, message, callback) {
                 $timeout(function() {
                     vm.confirmTitle = title || 'Confirm Action';
@@ -828,7 +906,8 @@
                             composer: '',
                             categoryId: vm.categories[0] ? vm.categories[0].id : 1,
                             targetBars: '',
-                            tasks: []
+                            checklist: [],
+                            isExpanded: true
                         };
                     }
                     var m = getModal('pieceModal');
@@ -844,7 +923,7 @@
                         vm.editingCategory = {
                             id: Date.now(),
                             name: '',
-                            color: '#6366f1',
+                            color: '#38bdf8',
                             icon: 'fa-folder'
                         };
                     }
@@ -869,12 +948,11 @@
                 $timeout(function() {
                     vm.editingLog = {
                         id: Date.now(),
-                        pieceTitle: 'Manual Practice',
+                        pieceTitle: 'General Practice',
                         date: new Date(),
                         durationMinutes: 30,
-                        barsWorked: '',
                         categoryName: 'General',
-                        categoryColor: '#6366f1'
+                        categoryColor: '#38bdf8'
                     };
                     var m = getModal('logModal');
                     if (m) m.show();
@@ -888,10 +966,7 @@
                 }, 0);
             };
 
-            /* -----------------------------------------------------------------
-             * PERSISTENCE & INITIAL SEEDING
-             * ----------------------------------------------------------------- */
-            var STORAGE_KEY = 'PracticeTempo_V2_Data';
+            var STORAGE_KEY = 'PracticeTempo_V3_Data';
 
             function loadInitialData() {
                 var raw = localStorage.getItem(STORAGE_KEY);
@@ -905,10 +980,10 @@
                     } catch(e) { console.error('Failed to parse storage', e); }
                 }
 
-                // Default seed data
+                // Default high-contrast seed data
                 vm.categories = [
-                    { id: 1, name: 'Scales & Technique', color: '#3b82f6', icon: 'fa-graduation-cap' },
-                    { id: 2, name: 'Repertoire Pieces', color: '#5ceef6', icon: 'fa-music' },
+                    { id: 1, name: 'Scales & Technique', color: '#38bdf8', icon: 'fa-graduation-cap' },
+                    { id: 2, name: 'Repertoire Pieces', color: '#a855f7', icon: 'fa-music' },
                     { id: 3, name: 'Etudes & Exercises', color: '#ec4899', icon: 'fa-book-open' },
                     { id: 4, name: 'Sight Reading', color: '#10b981', icon: 'fa-eye' }
                 ];
@@ -920,9 +995,11 @@
                         composer: 'L. v. Beethoven',
                         categoryId: 2,
                         targetBars: 'mm. 1-69',
-                        tasks: [
-                            { id: 1001, title: 'Left hand arpeggios balance mm. 1-15', completed: false },
-                            { id: 1002, title: 'Melodic voicing & legato, measure 27-42', completed: false }
+                        isExpanded: true,
+                        checklist: [
+                            { text: 'mm. 1-15: Focus on soft triplet voicing in right hand', completed: true },
+                            { text: 'mm. 27-42: Measure 32 cadential trill & bass balance', completed: false },
+                            { text: 'Full playthrough with metronome at 60 BPM', completed: false }
                         ]
                     },
                     {
@@ -930,9 +1007,10 @@
                         title: 'Hanon Exercise No. 1',
                         composer: 'C.L. Hanon',
                         categoryId: 1,
-                        targetBars: 'Full Pattern',
-                        tasks: [
-                            { id: 1003, title: 'Even rhythm at 110 BPM with metronome', completed: true }
+                        targetBars: 'Ascending & Descending',
+                        isExpanded: false,
+                        checklist: [
+                            { text: 'Even finger weight at 110 BPM', completed: true }
                         ]
                     }
                 ];
@@ -943,16 +1021,15 @@
                         id: 501,
                         pieceId: 101,
                         pieceTitle: 'Moonlight Sonata - 1st Mvt',
-                        taskTitle: 'Left hand arpeggios balance mm. 1-15',
                         categoryName: 'Repertoire Pieces',
-                        categoryColor: '#5ceef6',
+                        categoryColor: '#a855f7',
                         date: todayStr,
-                        timeFormatted: '10:15 AM',
-                        durationSeconds: 1500,
-                        barsWorked: 'mm. 1-15',
-                        minBpm: 60,
-                        maxBpm: 68,
-                        startTime: Date.now() - 3600000
+                        startTimeFormatted: '10:15 AM',
+                        endTimeFormatted: '10:45 AM',
+                        durationSeconds: 1800,
+                        minBpm: 58,
+                        maxBpm: 66,
+                        startTimeTimestamp: Date.now() - 3600000
                     }
                 ];
 
@@ -968,9 +1045,6 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
             };
 
-            /* -----------------------------------------------------------------
-             * CATEGORY & PIECE MANAGEMENT
-             * ----------------------------------------------------------------- */
             vm.getCategory = function(catId) {
                 return vm.categories.find(function(c) { return c.id === catId; }) || { name: 'Uncategorized', color: '#64748b' };
             };
@@ -997,7 +1071,10 @@
             };
 
             vm.confirmDeletePiece = function(piece) {
-                vm.openConfirmModal('Delete Piece', 'Are you sure you want to delete "' + piece.title + '" and its tasks?', function() {
+                vm.openConfirmModal('Delete Piece', 'Are you sure you want to delete "' + piece.title + '"?', function() {
+                    if (vm.activePiece && vm.activePiece.id === piece.id) {
+                        vm.stopAndSaveSession();
+                    }
                     vm.pieces = vm.pieces.filter(function(p) { return p.id !== piece.id; });
                     vm.saveData();
                 });
@@ -1015,53 +1092,59 @@
                 if (m) m.hide();
             };
 
-            vm.addNewTaskToPiece = function(piece) {
-                if (!piece.tasks) piece.tasks = [];
-                piece.tasks.push({
-                    id: Date.now(),
-                    title: 'New Focus Area',
+            // Checklist Functions
+            vm.addChecklistItem = function(piece) {
+                if (!piece.checklist) piece.checklist = [];
+                piece.checklist.push({
+                    text: '',
                     completed: false
                 });
+                piece.isExpanded = true;
                 vm.saveData();
             };
 
-            vm.removeTaskFromPiece = function(piece, index) {
-                piece.tasks.splice(index, 1);
+            vm.removeChecklistItem = function(piece, index) {
+                piece.checklist.splice(index, 1);
                 vm.saveData();
             };
 
             /* -----------------------------------------------------------------
-             * BACKGROUND-RESILIENT PRACTICE TIMER
+             * PIECE-LEVEL PRACTICE TIMER (BACKGROUND RESILIENT)
              * ----------------------------------------------------------------- */
-            vm.selectAndStartTask = function(piece, task) {
-                // If a session is currently running, automatically finish & save it first
-                if (vm.activeTask) {
+            vm.startPracticeForPiece = function(piece) {
+                // If clicking the currently active piece: toggle pause/resume
+                if (vm.activePiece && vm.activePiece.id === piece.id) {
+                    vm.toggleTimer();
+                    return;
+                }
+
+                // If switching from another piece: save previous session first
+                if (vm.activePiece) {
                     vm.stopAndSaveSession();
                 }
 
                 vm.activePiece = piece;
-                vm.activeTask = task;
-                vm.activeCategory = vm.getCategory(piece.categoryId);
+                piece.isExpanded = true; // Auto-expand checklist when practicing this piece
                 vm.elapsedBeforePause = 0;
-                vm.activeMinBpm = vm.metronomeRunning ? vm.metronomeBpm : null;
-                vm.activeMaxBpm = vm.metronomeRunning ? vm.metronomeBpm : null;
+                vm.sessionMinBpm = vm.metronomeRunning ? vm.metronomeBpm : null;
+                vm.sessionMaxBpm = vm.metronomeRunning ? vm.metronomeBpm : null;
                 
                 vm.startTimer();
             };
 
             vm.startTimer = function() {
                 vm.timerRunning = true;
-                vm.startTime = Date.now() - (vm.elapsedBeforePause * 1000);
+                vm.sessionStartTimestamp = Date.now() - (vm.elapsedBeforePause * 1000);
 
                 if (timerInterval) $interval.cancel(timerInterval);
                 timerInterval = $interval(function() {
                     if (vm.timerRunning) {
-                        vm.currentElapsedSeconds = Math.floor((Date.now() - vm.startTime) / 1000);
+                        vm.currentElapsedSeconds = Math.floor((Date.now() - vm.sessionStartTimestamp) / 1000);
                         
-                        // Metronome BPM tracking during session
+                        // Metronome BPM tracking
                         if (vm.metronomeRunning) {
-                            if (vm.activeMinBpm === null || vm.metronomeBpm < vm.activeMinBpm) vm.activeMinBpm = vm.metronomeBpm;
-                            if (vm.activeMaxBpm === null || vm.metronomeBpm > vm.activeMaxBpm) vm.activeMaxBpm = vm.metronomeBpm;
+                            if (vm.sessionMinBpm === null || vm.metronomeBpm < vm.sessionMinBpm) vm.sessionMinBpm = vm.metronomeBpm;
+                            if (vm.sessionMaxBpm === null || vm.metronomeBpm > vm.sessionMaxBpm) vm.sessionMaxBpm = vm.metronomeBpm;
                         }
                     }
                 }, 200);
@@ -1077,25 +1160,29 @@
             };
 
             vm.stopAndSaveSession = function() {
-                if (!vm.activeTask) return;
+                if (!vm.activePiece) return;
 
-                if (vm.currentElapsedSeconds >= 5) {
+                if (vm.currentElapsedSeconds >= 3) {
                     var now = new Date();
+                    var startObj = new Date(now.getTime() - (vm.currentElapsedSeconds * 1000));
+                    
+                    var cat = vm.getCategory(vm.activePiece.categoryId);
+
                     var logEntry = {
                         id: Date.now(),
                         pieceId: vm.activePiece.id,
                         pieceTitle: vm.activePiece.title,
-                        taskTitle: vm.activeTask.title,
-                        categoryName: vm.activeCategory.name,
-                        categoryColor: vm.activeCategory.color,
+                        categoryName: cat.name,
+                        categoryColor: cat.color,
                         date: now.toISOString().split('T')[0],
-                        timeFormatted: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        startTimeFormatted: startObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        endTimeFormatted: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         durationSeconds: vm.currentElapsedSeconds,
-                        barsWorked: vm.activePiece.targetBars || '',
-                        minBpm: vm.activeMinBpm,
-                        maxBpm: vm.activeMaxBpm,
-                        startTime: now.getTime()
+                        minBpm: vm.sessionMinBpm,
+                        maxBpm: vm.sessionMaxBpm,
+                        startTimeTimestamp: startObj.getTime()
                     };
+
                     vm.logs.unshift(logEntry);
                     vm.saveData();
                 }
@@ -1105,9 +1192,7 @@
 
             vm.cancelTimer = function() {
                 if (timerInterval) $interval.cancel(timerInterval);
-                vm.activeTask = null;
                 vm.activePiece = null;
-                vm.activeCategory = null;
                 vm.timerRunning = false;
                 vm.currentElapsedSeconds = 0;
                 vm.elapsedBeforePause = 0;
@@ -1130,6 +1215,13 @@
                 vm.metronomeRunning = !vm.metronomeRunning;
                 if (vm.metronomeRunning) {
                     vm.currentBeat = 0;
+                    
+                    // Track tempo if practicing
+                    if (vm.activePiece) {
+                        if (vm.sessionMinBpm === null || vm.metronomeBpm < vm.sessionMinBpm) vm.sessionMinBpm = vm.metronomeBpm;
+                        if (vm.sessionMaxBpm === null || vm.metronomeBpm > vm.sessionMaxBpm) vm.sessionMaxBpm = vm.metronomeBpm;
+                    }
+
                     runMetronomeLoop();
                 } else {
                     if (metronomeTimer) $timeout.cancel(metronomeTimer);
@@ -1139,10 +1231,8 @@
             function runMetronomeLoop() {
                 if (!vm.metronomeRunning) return;
 
-                // Play Audio Click
                 playClickSound(vm.currentBeat === 0 && vm.accentFirstBeat);
 
-                // Schedule next beat
                 var intervalMs = (60 / vm.metronomeBpm) * 1000;
                 metronomeTimer = $timeout(function() {
                     vm.currentBeat = (vm.currentBeat + 1) % vm.beatsPerMeasure;
@@ -1172,22 +1262,24 @@
 
             vm.adjustBpm = function(delta) {
                 vm.metronomeBpm = Math.max(30, Math.min(280, vm.metronomeBpm + delta));
+                vm.updateMetronomeTempo();
             };
 
             vm.updateMetronomeTempo = function() {
-                // Instantly re-aligns loop
+                if (vm.activePiece && vm.metronomeRunning) {
+                    if (vm.sessionMinBpm === null || vm.metronomeBpm < vm.sessionMinBpm) vm.sessionMinBpm = vm.metronomeBpm;
+                    if (vm.sessionMaxBpm === null || vm.metronomeBpm > vm.sessionMaxBpm) vm.sessionMaxBpm = vm.metronomeBpm;
+                }
             };
 
             vm.getBeatArray = function() {
                 return new Array(vm.beatsPerMeasure);
             };
 
-            /* -----------------------------------------------------------------
-             * SCREEN WAKE LOCK API
-             * ----------------------------------------------------------------- */
+            /* Screen Wake Lock API */
             vm.toggleWakeLock = function() {
                 if (!('wakeLock' in navigator)) {
-                    vm.openConfirmModal('Wake Lock Unsupported', 'Your browser does not support the Screen Wake Lock API.');
+                    vm.openConfirmModal('Wake Lock Unsupported', 'Your device/browser does not support Screen Wake Lock API.');
                     return;
                 }
 
@@ -1205,23 +1297,21 @@
                 }
             };
 
-            /* -----------------------------------------------------------------
-             * LOGS & MANUAL retro editing
-             * ----------------------------------------------------------------- */
+            /* Logs & Manual Entry */
             vm.saveLogForm = function() {
                 if (vm.editingLog.id) {
                     var idx = vm.logs.findIndex(function(l) { return l.id === vm.editingLog.id; });
+                    vm.editingLog.durationSeconds = vm.editingLog.durationMinutes * 60;
+                    if (vm.editingLog.date instanceof Date) {
+                        vm.editingLog.date = vm.editingLog.date.toISOString().split('T')[0];
+                    }
+                    
                     if (idx > -1) {
-                        vm.editingLog.durationSeconds = vm.editingLog.durationMinutes * 60;
-                        if (vm.editingLog.date instanceof Date) {
-                            vm.editingLog.date = vm.editingLog.date.toISOString().split('T')[0];
-                        }
                         vm.logs[idx] = vm.editingLog;
                     } else {
-                        vm.editingLog.durationSeconds = vm.editingLog.durationMinutes * 60;
-                        if (vm.editingLog.date instanceof Date) {
-                            vm.editingLog.date = vm.editingLog.date.toISOString().split('T')[0];
-                        }
+                        vm.editingLog.startTimeFormatted = '12:00 PM';
+                        vm.editingLog.endTimeFormatted = '12:30 PM';
+                        vm.editingLog.startTimeTimestamp = Date.now();
                         vm.logs.unshift(vm.editingLog);
                     }
                 }
@@ -1231,14 +1321,14 @@
             };
 
             vm.confirmDeleteLog = function(log) {
-                vm.openConfirmModal('Delete Practice Log', 'Are you sure you want to delete this log entry?', function() {
+                vm.openConfirmModal('Delete Log Entry', 'Are you sure you want to delete this log entry?', function() {
                     vm.logs = vm.logs.filter(function(l) { return l.id !== log.id; });
                     vm.saveData();
                 });
             };
 
             /* -----------------------------------------------------------------
-             * SUMMARY & PIVOT TABLE ANALYTICS
+             * SUMMARY & PIVOT MATRIX ANALYTICS
              * ----------------------------------------------------------------- */
             vm.pivotRowKey = 'pieceTitle';
             vm.pivotColKey = 'categoryName';
@@ -1294,7 +1384,6 @@
                 if (trendChartInstance) trendChartInstance.destroy();
                 if (catChartInstance) catChartInstance.destroy();
 
-                // Group logs by date for trend
                 var dateTotals = {};
                 vm.logs.forEach(function(l) {
                     dateTotals[l.date] = (dateTotals[l.date] || 0) + Math.round(l.durationSeconds / 60);
@@ -1310,10 +1399,11 @@
                         datasets: [{
                             label: 'Minutes Practiced',
                             data: trendMinutes,
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.2)',
                             fill: true,
-                            tension: 0.3
+                            tension: 0.35,
+                            borderWidth: 3
                         }]
                     },
                     options: {
@@ -1323,7 +1413,6 @@
                     }
                 });
 
-                // Group by Category
                 var catTotals = {};
                 vm.logs.forEach(function(l) {
                     catTotals[l.categoryName] = (catTotals[l.categoryName] || 0) + Math.round(l.durationSeconds / 60);
@@ -1335,7 +1424,7 @@
                         labels: Object.keys(catTotals),
                         datasets: [{
                             data: Object.values(catTotals),
-                            backgroundColor: ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6']
+                            backgroundColor: ['#38bdf8', '#a855f7', '#ec4899', '#10b981', '#f59e0b']
                         }]
                     },
                     options: {
@@ -1345,9 +1434,6 @@
                 });
             }
 
-            /* -----------------------------------------------------------------
-             * BACKUP & RESTORE / UTILITY FUNCTIONS
-             * ----------------------------------------------------------------- */
             vm.formatDuration = function(totalSecs) {
                 if (!totalSecs || isNaN(totalSecs)) return '00:00:00';
                 var hrs = Math.floor(totalSecs / 3600);
@@ -1379,10 +1465,10 @@
                             $scope.$applyAsync();
                             var m = getModal('backupModal');
                             if (m) m.hide();
-                            vm.openConfirmModal('Import Successful', 'Your practice data was restored successfully!');
+                            vm.openConfirmModal('Import Successful', 'Your practice data was restored!');
                         }
                     } catch(err) {
-                        vm.openConfirmModal('Import Failed', 'Invalid JSON backup file format.');
+                        vm.openConfirmModal('Import Failed', 'Invalid JSON backup file.');
                     }
                 };
                 if (event.target.files[0]) {
@@ -1391,7 +1477,7 @@
             };
 
             vm.confirmResetData = function() {
-                vm.openConfirmModal('Reset All Data', 'Are you sure you want to reset all data to default values? This cannot be undone.', function() {
+                vm.openConfirmModal('Reset All Data', 'Are you sure you want to reset all data to default values?', function() {
                     localStorage.removeItem(STORAGE_KEY);
                     loadInitialData();
                     $scope.$applyAsync();
@@ -1400,7 +1486,6 @@
                 });
             };
 
-            // Initialize app data on startup
             loadInitialData();
         }]);
     </script>
