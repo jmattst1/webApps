@@ -48,7 +48,7 @@
 
         /* Glassmorphic Navbar */
         .navbar-pt {
-            background-color: rgba(19, 28, 46, 0.92);
+            background-color: rgba(19, 28, 46, 0.95);
             backdrop-filter: blur(12px);
             border-bottom: 2px solid var(--pt-card-border);
         }
@@ -203,11 +203,11 @@
             font-weight: 500;
         }
 
-        /* Scrollbar styling */
+        /* Custom Scrollbars */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #090d16; }
         ::-webkit-scrollbar-thumb { background: #2a3756; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+        ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
     </style>
 
     <!-- AngularJS 1.8.3 -->
@@ -237,9 +237,9 @@
                     <span class="d-none d-sm-inline" ng-bind="vm.wakeLockActive ? 'Screen Awake: ON' : 'Keep Screen Awake'"></span>
                 </button>
 
-                <!-- Settings / Backup Data -->
+                <!-- Data & Backup Modal Trigger -->
                 <button class="btn btn-outline-info btn-sm rounded-pill px-3 py-2 fw-semibold" ng-click="vm.openBackupModal()">
-                    <i class="fa-solid fa-cloud-arrow-down me-1"></i> Data & Backup
+                    <i class="fa-solid fa-hard-drive me-1"></i> Data & Backup
                 </button>
             </div>
         </div>
@@ -801,24 +801,34 @@
         </div>
     </div>
 
-    <!-- MODAL 5: DATA MANAGEMENT & BACKUP MODAL -->
+    <!-- MODAL 5: LOCAL DATA MANAGEMENT & BACKUP MODAL -->
     <div class="modal fade" id="backupModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-pt">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold text-white">Data Backup & Restore</h5>
+                    <h5 class="modal-title fw-bold text-white"><i class="fa-solid fa-hard-drive text-info me-2"></i> Local Device Data & Backup</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body d-flex flex-column gap-3">
-                    <p class="text-light small">Export your practice logs, repertoire pieces, and categories to JSON or restore from a backup file.</p>
+                    <div class="alert alert-dark border-secondary text-light small mb-0">
+                        <i class="fa-solid fa-shield-halved text-emerald me-1"></i>
+                        <strong>100% Offline & Private:</strong> All practice logs and repertoire data are saved locally on this browser/device. No server is used.
+                    </div>
+
+                    <p class="text-light small mb-0">Export your practice logs, repertoire pieces, and categories to a <code>.json</code> file on your local device, or import a previously exported file.</p>
+                    
                     <div class="d-grid gap-2">
                         <button class="btn btn-sky fw-bold py-2" ng-click="vm.exportBackupJSON()">
-                            <i class="fa-solid fa-download me-2"></i> Export Data Backup (JSON)
+                            <i class="fa-solid fa-download me-2"></i> Save Backup JSON to Device
                         </button>
-                        <label class="btn btn-outline-light fw-bold py-2">
-                            <i class="fa-solid fa-upload me-2"></i> Import Backup File
+                        
+                        <label class="btn btn-outline-light fw-bold py-2 mb-0">
+                            <i class="fa-solid fa-upload me-2"></i> Load Backup File from Device
                             <input type="file" accept=".json" style="display: none;" onchange="angular.element(this).scope().vm.importBackupJSON(event)">
                         </label>
+                        
+                        <hr class="border-secondary my-1">
+
                         <button class="btn btn-outline-danger fw-bold py-2" ng-click="vm.confirmResetData()">
                             <i class="fa-solid fa-rotate-left me-2"></i> Reset to Sample Data
                         </button>
@@ -834,9 +844,49 @@
         app.controller('PracticeController', ['$scope', '$timeout', '$interval', function($scope, $timeout, $interval) {
             var vm = this;
 
-            /* -----------------------------------------------------------------
-             * STATE INITIALIZATION & DEFAULT SEED DATA
-             * ----------------------------------------------------------------- */
+            /**
+             * Helper to return a local date string formatted as YYYY-MM-DD.
+             * Fixes the off-by-one bug where toISOString() uses UTC, marking evening sessions as tomorrow's date.
+             */
+            vm.getLocalDateString = function(dateInput) {
+                var d;
+                if (!dateInput) {
+                    d = new Date();
+                } else if (dateInput instanceof Date) {
+                    d = dateInput;
+                } else if (typeof dateInput === 'string') {
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+                        return dateInput;
+                    }
+                    d = new Date(dateInput);
+                } else {
+                    d = new Date(dateInput);
+                }
+
+                if (isNaN(d.getTime())) d = new Date();
+
+                var year = d.getFullYear();
+                var month = String(d.getMonth() + 1).padStart(2, '0');
+                var day = String(d.getDate()).padStart(2, '0');
+                return year + '-' + month + '-' + day;
+            };
+
+            /**
+             * Helper to safely parse a YYYY-MM-DD string as a local Date object.
+             */
+            vm.parseLocalDateString = function(dateStr) {
+                if (!dateStr) return new Date();
+                if (dateStr instanceof Date) return dateStr;
+                var parts = String(dateStr).split('-');
+                if (parts.length === 3) {
+                    var yr = parseInt(parts[0], 10);
+                    var mo = parseInt(parts[1], 10) - 1;
+                    var dy = parseInt(parts[2], 10);
+                    return new Date(yr, mo, dy);
+                }
+                return new Date(dateStr);
+            };
+
             vm.currentTab = 'practice';
             vm.selectedCategoryFilter = null;
             vm.wakeLockActive = false;
@@ -937,7 +987,7 @@
                     if (log) {
                         vm.editingLog = angular.copy(log);
                         vm.editingLog.durationMinutes = Math.round(log.durationSeconds / 60);
-                        if (log.date) vm.editingLog.date = new Date(log.date);
+                        if (log.date) vm.editingLog.date = vm.parseLocalDateString(log.date);
                     }
                     var m = getModal('logModal');
                     if (m) m.show();
@@ -997,7 +1047,7 @@
                         targetBars: 'mm. 1-69',
                         isExpanded: true,
                         checklist: [
-                            { text: 'mm. 1-15: Focus on soft triplet voicing in right hand', completed: true },
+                            { text: 'mm. 1-15: Soft triplet voicing in right hand', completed: true },
                             { text: 'mm. 27-42: Measure 32 cadential trill & bass balance', completed: false },
                             { text: 'Full playthrough with metronome at 60 BPM', completed: false }
                         ]
@@ -1015,7 +1065,7 @@
                     }
                 ];
 
-                var todayStr = new Date().toISOString().split('T')[0];
+                var todayStr = vm.getLocalDateString(new Date());
                 vm.logs = [
                     {
                         id: 501,
@@ -1174,7 +1224,7 @@
                         pieceTitle: vm.activePiece.title,
                         categoryName: cat.name,
                         categoryColor: cat.color,
-                        date: now.toISOString().split('T')[0],
+                        date: vm.getLocalDateString(now),
                         startTimeFormatted: startObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         endTimeFormatted: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         durationSeconds: vm.currentElapsedSeconds,
@@ -1216,7 +1266,6 @@
                 if (vm.metronomeRunning) {
                     vm.currentBeat = 0;
                     
-                    // Track tempo if practicing
                     if (vm.activePiece) {
                         if (vm.sessionMinBpm === null || vm.metronomeBpm < vm.sessionMinBpm) vm.sessionMinBpm = vm.metronomeBpm;
                         if (vm.sessionMaxBpm === null || vm.metronomeBpm > vm.sessionMaxBpm) vm.sessionMaxBpm = vm.metronomeBpm;
@@ -1302,9 +1351,7 @@
                 if (vm.editingLog.id) {
                     var idx = vm.logs.findIndex(function(l) { return l.id === vm.editingLog.id; });
                     vm.editingLog.durationSeconds = vm.editingLog.durationMinutes * 60;
-                    if (vm.editingLog.date instanceof Date) {
-                        vm.editingLog.date = vm.editingLog.date.toISOString().split('T')[0];
-                    }
+                    vm.editingLog.date = vm.getLocalDateString(vm.editingLog.date);
                     
                     if (idx > -1) {
                         vm.logs[idx] = vm.editingLog;
@@ -1328,6 +1375,81 @@
             };
 
             /* -----------------------------------------------------------------
+             * LOCAL DEVICE BACKUP & RESTORE (100% OFFLINE, BLOB & FILEREADER)
+             * ----------------------------------------------------------------- */
+            vm.exportBackupJSON = function() {
+                try {
+                    var dataObj = {
+                        version: '3.1',
+                        exportDate: vm.getLocalDateString(new Date()),
+                        categories: vm.categories,
+                        pieces: vm.pieces,
+                        logs: vm.logs
+                    };
+
+                    var jsonString = JSON.stringify(dataObj, null, 2);
+                    var blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+                    var url = URL.createObjectURL(blob);
+                    var fileName = "PracticeTempo_Backup_" + vm.getLocalDateString(new Date()) + ".json";
+
+                    var link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', fileName);
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    $timeout(function() {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }, 1000);
+                } catch(e) {
+                    console.error('Export error:', e);
+                    vm.openConfirmModal('Export Failed', 'Unable to generate local backup file: ' + e.message);
+                }
+            };
+
+            vm.importBackupJSON = function(event) {
+                var file = event.target.files ? event.target.files[0] : null;
+                if (!file) return;
+
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        var parsed = JSON.parse(e.target.result);
+                        if (parsed && Array.isArray(parsed.categories) && Array.isArray(parsed.pieces) && Array.isArray(parsed.logs)) {
+                            vm.categories = parsed.categories;
+                            vm.pieces = parsed.pieces;
+                            vm.logs = parsed.logs;
+                            vm.saveData();
+                            $scope.$applyAsync(function() {
+                                var m = getModal('backupModal');
+                                if (m) m.hide();
+                                vm.openConfirmModal('Import Successful', 'Successfully imported ' + vm.logs.length + ' practice log entries!');
+                            });
+                        } else {
+                            throw new Error('Invalid JSON backup file structure.');
+                        }
+                    } catch(err) {
+                        $scope.$applyAsync(function() {
+                            vm.openConfirmModal('Import Error', 'Failed to parse JSON backup file: ' + err.message);
+                        });
+                    }
+                    event.target.value = '';
+                };
+                reader.readAsText(file);
+            };
+
+            vm.confirmResetData = function() {
+                vm.openConfirmModal('Reset All Data', 'Are you sure you want to reset all data to default values?', function() {
+                    localStorage.removeItem(STORAGE_KEY);
+                    loadInitialData();
+                    $scope.$applyAsync();
+                    var m = getModal('backupModal');
+                    if (m) m.hide();
+                });
+            };
+
+            /* -----------------------------------------------------------------
              * SUMMARY & PIVOT MATRIX ANALYTICS
              * ----------------------------------------------------------------- */
             vm.pivotRowKey = 'pieceTitle';
@@ -1335,14 +1457,14 @@
             vm.pivotData = { rows: [], columns: [] };
 
             vm.getTodayTotalSeconds = function() {
-                var today = new Date().toISOString().split('T')[0];
-                return vm.logs.filter(function(l) { return l.date === today; })
+                var todayStr = vm.getLocalDateString(new Date());
+                return vm.logs.filter(function(l) { return l.date === todayStr; })
                               .reduce(function(acc, l) { return acc + (l.durationSeconds || 0); }, 0);
             };
 
             vm.getTodaySessionCount = function() {
-                var today = new Date().toISOString().split('T')[0];
-                return vm.logs.filter(function(l) { return l.date === today; }).length;
+                var todayStr = vm.getLocalDateString(new Date());
+                return vm.logs.filter(function(l) { return l.date === todayStr; }).length;
             };
 
             vm.rebuildPivotTable = function() {
@@ -1442,48 +1564,6 @@
 
                 var p2 = function(n) { return n < 10 ? '0' + n : n; };
                 return p2(hrs) + ':' + p2(mins) + ':' + p2(secs);
-            };
-
-            vm.exportBackupJSON = function() {
-                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem(STORAGE_KEY));
-                var dlAnchor = document.createElement('a');
-                dlAnchor.setAttribute("href", dataStr);
-                dlAnchor.setAttribute("download", "PracticeTempo_Backup_" + new Date().toISOString().split('T')[0] + ".json");
-                document.body.appendChild(dlAnchor);
-                dlAnchor.click();
-                dlAnchor.remove();
-            };
-
-            vm.importBackupJSON = function(event) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        var parsed = JSON.parse(e.target.result);
-                        if (parsed.categories && parsed.pieces && parsed.logs) {
-                            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-                            loadInitialData();
-                            $scope.$applyAsync();
-                            var m = getModal('backupModal');
-                            if (m) m.hide();
-                            vm.openConfirmModal('Import Successful', 'Your practice data was restored!');
-                        }
-                    } catch(err) {
-                        vm.openConfirmModal('Import Failed', 'Invalid JSON backup file.');
-                    }
-                };
-                if (event.target.files[0]) {
-                    reader.readAsText(event.target.files[0]);
-                }
-            };
-
-            vm.confirmResetData = function() {
-                vm.openConfirmModal('Reset All Data', 'Are you sure you want to reset all data to default values?', function() {
-                    localStorage.removeItem(STORAGE_KEY);
-                    loadInitialData();
-                    $scope.$applyAsync();
-                    var m = getModal('backupModal');
-                    if (m) m.hide();
-                });
             };
 
             loadInitialData();
