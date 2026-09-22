@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Prevent uncompiled AngularJS template tags from flashing on load */
         [ng-cloak] {
             display: none !important;
         }
@@ -68,7 +67,6 @@
             background: linear-gradient(145deg, #132238 0%, #0d1a2d 100%);
         }
 
-        /* Responsive Active Timer Banner */
         .active-timer-banner {
             background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
             border: 2px solid var(--pt-accent-emerald);
@@ -76,7 +74,6 @@
             border-radius: 1.25rem;
         }
 
-        /* Pulse animation for metronome beat */
         @keyframes pulse-emerald {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
             50% { transform: scale(1.12); box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
@@ -89,7 +86,7 @@
             color: #ffffff !important;
         }
 
-        /* High Contrast Touch-Friendly Buttons */
+        /* High Contrast Touch Buttons */
         .btn-touch {
             min-height: 48px;
             padding: 0.65rem 1.25rem;
@@ -133,7 +130,21 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* High Contrast Checklist Inputs */
+        /* Target Progress Bar Styles */
+        .progress-pt {
+            height: 10px;
+            background-color: #090d16;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--pt-card-border);
+        }
+        .progress-bar-emerald {
+            background-color: #10b981;
+        }
+        .progress-bar-amber {
+            background-color: #f59e0b;
+        }
+
         .checklist-item-input {
             background: transparent;
             border: none;
@@ -155,7 +166,6 @@
             opacity: 0.7;
         }
 
-        /* High Contrast Modal Styling */
         .modal-content-pt {
             background-color: #131c2e;
             color: #ffffff;
@@ -182,7 +192,6 @@
             box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25);
         }
 
-        /* Table Styling for Pivot view & Practice history */
         .table-pt {
             color: #ffffff;
             border-color: var(--pt-card-border);
@@ -203,7 +212,13 @@
             font-weight: 500;
         }
 
-        /* Custom Scrollbars */
+        .preset-btn {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 2rem;
+        }
+
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #090d16; }
         ::-webkit-scrollbar-thumb { background: #2a3756; border-radius: 4px; }
@@ -220,7 +235,6 @@
 
 <body ng-controller="PracticeController as vm" ng-cloak>
 
-    <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-pt sticky-top px-2 px-md-4">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center gap-2" href="#">
@@ -236,6 +250,11 @@
                     <i class="fa-solid" ng-class="vm.wakeLockActive ? 'fa-sun text-warning' : 'fa-moon text-secondary'"></i>
                     <span class="d-none d-sm-inline" ng-bind="vm.wakeLockActive ? 'Screen Awake: ON' : 'Keep Screen Awake'"></span>
                 </button>
+
+                <!-- Storage Status Warning Badge -->
+                <span ng-if="!vm.isNativeStorage" class="badge bg-warning text-dark px-2 py-2 fw-bold" title="Using Memory Fallback Storage">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Memory Mode
+                </span>
 
                 <!-- Data & Backup Modal Trigger -->
                 <button class="btn btn-outline-info btn-sm rounded-pill px-3 py-2 fw-semibold" ng-click="vm.openBackupModal()">
@@ -296,7 +315,7 @@
             </div>
         </div>
 
-        <!-- Main Navigation Tabs -->
+        <!-- Navigation Tabs -->
         <ul class="nav nav-pills mb-4 gap-2 border-bottom border-secondary pb-3" id="mainTabs">
             <li class="nav-item">
                 <button class="nav-link text-white btn-touch" 
@@ -323,7 +342,7 @@
                 <button class="nav-link text-white btn-touch" 
                         ng-class="{'active bg-primary fw-bold': vm.currentTab === 'analytics'}" 
                         ng-click="vm.switchTab('analytics')">
-                    <i class="fa-solid fa-chart-pie"></i> Pivot Table & Charts
+                    <i class="fa-solid fa-chart-pie"></i> Pivot Table & Analytics
                 </button>
             </li>
         </ul>
@@ -331,7 +350,7 @@
         <!-- TAB 1: PRACTICE DASHBOARD -->
         <section ng-show="vm.currentTab === 'practice'">
             <div class="row g-4">
-                <!-- Left Sidebar: Category Filter & Today's Stats -->
+                <!-- Left Sidebar: Categories & Today's Stats -->
                 <div class="col-lg-3">
                     <!-- Categories Card -->
                     <div class="card card-pt p-3 mb-4">
@@ -349,7 +368,7 @@
                                 <span class="badge bg-dark text-white rounded-pill" ng-bind="vm.pieces.length"></span>
                             </button>
 
-                            <div ng-repeat="cat in vm.categories" class="d-flex align-items-center gap-1">
+                            <div ng-repeat="cat in vm.categories track by cat.id" class="d-flex align-items-center gap-1">
                                 <button class="btn btn-sm text-start flex-grow-1 d-flex justify-content-between align-items-center fw-semibold py-2 px-3"
                                         ng-class="vm.selectedCategoryFilter === cat.id ? 'btn-info text-dark font-bold' : 'btn-outline-secondary text-white'"
                                         ng-click="vm.selectedCategoryFilter = cat.id">
@@ -381,7 +400,7 @@
                     </div>
                 </div>
 
-                <!-- Right Side: Repertoire Pieces List & Piece-Level Start Buttons -->
+                <!-- Right Side: Repertoire Pieces List & Target Bars -->
                 <div class="col-lg-9">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="fw-bold mb-0 text-white"><i class="fa-solid fa-music text-info me-2"></i> Repertoire Pieces</h4>
@@ -397,7 +416,7 @@
                              ng-class="{'card-pt-active': vm.activePiece && vm.activePiece.id === piece.id}">
                             
                             <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
-                                <div>
+                                <div class="flex-grow-1">
                                     <div class="d-flex align-items-center gap-2 mb-2">
                                         <span class="badge badge-cat" 
                                               ng-style="{'background-color': vm.getCategory(piece.categoryId).color}"
@@ -428,12 +447,32 @@
                                 </div>
                             </div>
 
+                            <!-- DAILY TARGET TIME & PROGRESS BAR -->
+                            <div class="bg-dark p-3 rounded-3 border border-secondary mt-2 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small fw-bold text-light">
+                                        <i class="fa-solid fa-bullseye text-emerald me-1"></i> Today's Daily Target: 
+                                        <span class="text-white" ng-bind="(piece.targetMinutes || 15) + ' mins'"></span>
+                                    </span>
+                                    <span class="mono small fw-bold" ng-class="vm.getTodayPieceMinutes(piece.id) >= (piece.targetMinutes || 15) ? 'text-emerald' : 'text-info'">
+                                        <span ng-bind="vm.getTodayPieceMinutes(piece.id)"></span> / <span ng-bind="piece.targetMinutes || 15"></span> mins
+                                        (<span ng-bind="vm.getTodayPieceProgressPct(piece)"></span>%)
+                                    </span>
+                                </div>
+                                <div class="progress progress-pt">
+                                    <div class="progress-bar" 
+                                         ng-class="vm.getTodayPieceMinutes(piece.id) >= (piece.targetMinutes || 15) ? 'progress-bar-emerald' : 'progress-bar-amber'" 
+                                         role="progressbar" 
+                                         ng-style="{'width': Math.min(100, vm.getTodayPieceProgressPct(piece)) + '%'}"></div>
+                                </div>
+                            </div>
+
                             <!-- EXPANDABLE CHECKLIST ITEMS (BARS/TASKS) -->
-                            <div class="border-top border-secondary pt-3 mt-3">
+                            <div class="border-top border-secondary pt-3 mt-1">
                                 <div class="d-flex justify-content-between align-items-center mb-2 cursor-pointer" ng-click="piece.isExpanded = !piece.isExpanded">
                                     <span class="fw-bold text-info text-uppercase text-xs d-flex align-items-center gap-2">
                                         <i class="fa-solid" ng-class="piece.isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
-                                        <i class="fa-solid fa-list-check"></i> Practice Checklist / Focus Areas 
+                                        <i class="fa-solid fa-list-check"></i> Practice Focus Checklist 
                                         <span class="badge bg-dark text-white ms-1" ng-bind="(piece.checklist || []).length"></span>
                                     </span>
                                     <button class="btn btn-sm btn-link text-info text-decoration-none p-0 fw-semibold" 
@@ -447,14 +486,12 @@
                                     <div ng-repeat="item in piece.checklist track by $index" 
                                          class="d-flex align-items-center gap-2 p-2 rounded bg-dark border border-secondary">
                                         
-                                        <!-- Checkbox -->
                                         <input type="checkbox" 
                                                class="form-check-input mt-0 ms-1" 
                                                style="width: 22px; height: 22px; cursor: pointer;"
                                                ng-model="item.completed" 
                                                ng-change="vm.saveData()">
 
-                                        <!-- Editable Text Input -->
                                         <input type="text" 
                                                class="checklist-item-input flex-grow-1"
                                                ng-class="{'checklist-completed': item.completed}"
@@ -462,7 +499,6 @@
                                                ng-blur="vm.saveData()" 
                                                placeholder="Type bar numbers or focus area (e.g., mm. 1-16 hands separate)...">
 
-                                        <!-- Delete Item Button -->
                                         <button class="btn btn-sm text-danger px-2" ng-click="vm.removeChecklistItem(piece, $index)" title="Remove item">
                                             <i class="fa-solid fa-xmark fs-5"></i>
                                         </button>
@@ -486,7 +522,7 @@
             </div>
         </section>
 
-        <!-- TAB 2: INTEGRATED METRONOME -->
+        <!-- TAB 2: METRONOME -->
         <section ng-show="vm.currentTab === 'metronome'">
             <div class="row justify-content-center">
                 <div class="col-lg-8 col-xl-6">
@@ -540,7 +576,6 @@
                             </div>
                         </div>
 
-                        <!-- Metronome Toggle Button -->
                         <div class="d-grid mt-4">
                             <button class="btn btn-lg btn-touch" ng-class="vm.metronomeRunning ? 'btn-danger' : 'btn-emerald'" ng-click="vm.toggleMetronome()">
                                 <i class="fa-solid" ng-class="vm.metronomeRunning ? 'fa-stop' : 'fa-play'"></i>
@@ -552,7 +587,7 @@
             </div>
         </section>
 
-        <!-- TAB 3: PRACTICE HISTORY LOGS -->
+        <!-- TAB 3: PRACTICE HISTORY LOG -->
         <section ng-show="vm.currentTab === 'logs'">
             <div class="card card-pt p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
@@ -612,54 +647,145 @@
             </div>
         </section>
 
-        <!-- TAB 4: PIVOT TABLE & CHARTS ANALYTICS -->
+        <!-- TAB 4: PIVOT TABLE & ANALYTICS -->
         <section ng-show="vm.currentTab === 'analytics'">
-            <div class="row g-4">
-                <!-- Practice Trend Chart -->
-                <div class="col-lg-8">
+            <!-- FILTER PANEL: DATE RANGE & PRESETS -->
+            <div class="card card-pt p-3 p-md-4 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                    <h5 class="fw-bold text-white mb-0">
+                        <i class="fa-solid fa-filter text-info me-2"></i> Date Range & Analytics Filters
+                    </h5>
+                    <!-- Quick Presets -->
+                    <div class="d-flex flex-wrap gap-1">
+                        <button class="btn btn-sm btn-outline-info preset-btn" ng-click="vm.setPresetRange('today')">Today</button>
+                        <button class="btn btn-sm btn-outline-info preset-btn" ng-click="vm.setPresetRange('this_week')">This Week</button>
+                        <button class="btn btn-sm btn-outline-info preset-btn" ng-click="vm.setPresetRange('last_7_days')">Last 7 Days</button>
+                        <button class="btn btn-sm btn-outline-info preset-btn" ng-click="vm.setPresetRange('this_month')">This Month</button>
+                        <button class="btn btn-sm btn-outline-info preset-btn" ng-click="vm.setPresetRange('last_30_days')">Last 30 Days</button>
+                        <button class="btn btn-sm btn-outline-info preset-btn" ng-click="vm.setPresetRange('this_year')">This Year</button>
+                        <button class="btn btn-sm btn-outline-info preset-btn" ng-click="vm.setPresetRange('all_time')">All Time</button>
+                    </div>
+                </div>
+
+                <div class="row g-3 align-items-end">
+                    <div class="col-6 col-md-3">
+                        <label class="form-label text-light small fw-bold">From Date</label>
+                        <input type="date" class="form-control form-control-pt" ng-model="vm.fromDate" ng-change="vm.updateAnalyticsView()">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label text-light small fw-bold">To Date</label>
+                        <input type="date" class="form-control form-control-pt" ng-model="vm.toDate" ng-change="vm.updateAnalyticsView()">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-2 bg-dark rounded border border-secondary text-center">
+                            <span class="text-light small">Selected Range Duration: </span>
+                            <strong class="text-info" ng-bind="vm.getSelectedRangeDays() + ' Day(s)'"></strong>
+                            <span class="text-muted mx-2">|</span>
+                            <span class="text-light small">Total Logs in Range: </span>
+                            <strong class="text-emerald" ng-bind="vm.getFilteredLogs().length"></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS VISUALIZATION CHARTS -->
+            <div class="row g-4 mb-4">
+                <!-- Target vs Actual Bar Chart -->
+                <div class="col-lg-6">
                     <div class="card card-pt p-4 h-100">
-                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-chart-line text-info me-2"></i> Daily Practice Minutes</h5>
+                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-chart-column text-info me-2"></i> Target vs. Actual Practice (Minutes)</h5>
+                        <div style="position: relative; min-height: 280px;">
+                            <canvas id="targetVsActualChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Trend Chart with Grouping -->
+                <div class="col-lg-6">
+                    <div class="card card-pt p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-white mb-0"><i class="fa-solid fa-chart-line text-info me-2"></i> Time Trend Line</h5>
+                            <select class="form-select form-select-sm form-select-pt w-auto" ng-model="vm.trendGrouping" ng-change="vm.updateAnalyticsView()">
+                                <option value="day">By Day</option>
+                                <option value="week">By Week</option>
+                                <option value="month">By Month</option>
+                            </select>
+                        </div>
                         <div style="position: relative; min-height: 280px;">
                             <canvas id="trendChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- Category Breakdown Chart -->
-                <div class="col-lg-4">
+                <!-- Target Completion Gauge -->
+                <div class="col-lg-6">
                     <div class="card card-pt p-4 h-100">
-                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-chart-pie text-info me-2"></i> Category Distribution</h5>
-                        <div style="position: relative; min-height: 280px;" class="d-flex align-items-center justify-content-center">
-                            <canvas id="categoryChart"></canvas>
+                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-bullseye text-warning me-2"></i> Overall Target Completion Met</h5>
+                        <div style="position: relative; min-height: 250px;" class="d-flex align-items-center justify-content-center">
+                            <canvas id="targetDoughnutChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- DYNAMIC PIVOT TABLE MATRIX -->
+                <!-- Category Breakdown Chart -->
+                <div class="col-lg-6">
+                    <div class="card card-pt p-4 h-100">
+                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-chart-pie text-info me-2"></i> Category Time Distribution</h5>
+                        <div style="position: relative; min-height: 250px;" class="d-flex align-items-center justify-content-center">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC PIVOT TABLE & TARGET VS ACTUAL REPORT -->
+            <div class="row">
                 <div class="col-12">
                     <div class="card card-pt p-4">
-                        <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-table-cells me-2 text-info"></i> Practice Time Pivot Matrix</h5>
-                        
-                        <div class="row g-3 mb-4 bg-dark p-3 rounded border border-secondary">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                            <h5 class="fw-bold mb-0 text-white"><i class="fa-solid fa-table-cells me-2 text-info"></i> Practice Data Pivot Matrix & Reports</h5>
+                            
+                            <!-- View Mode Selector Toggle -->
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-touch py-2" 
+                                        ng-class="vm.pivotReportMode === 'summary' ? 'btn-sky' : 'btn-outline-light'" 
+                                        ng-click="vm.pivotReportMode = 'summary'; vm.rebuildPivotTable()">
+                                    <i class="fa-solid fa-table"></i> Time Summary Matrix
+                                </button>
+                                <button type="button" class="btn btn-touch py-2" 
+                                        ng-class="vm.pivotReportMode === 'targetVsActual' ? 'btn-emerald' : 'btn-outline-light'" 
+                                        ng-click="vm.pivotReportMode = 'targetVsActual'; vm.rebuildPivotTable()">
+                                    <i class="fa-solid fa-bullseye"></i> Target vs. Actual Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TIME SUMMARY MATRIX OPTIONS -->
+                        <div class="row g-3 mb-4 bg-dark p-3 rounded border border-secondary" ng-if="vm.pivotReportMode === 'summary'">
                             <div class="col-md-6">
-                                <label class="form-label text-light small fw-bold">Row Dimension</label>
+                                <label class="form-label text-light small fw-bold">Row Grouping Dimension</label>
                                 <select class="form-select form-select-pt" ng-model="vm.pivotRowKey" ng-change="vm.rebuildPivotTable()">
                                     <option value="pieceTitle">Piece Title</option>
                                     <option value="categoryName">Category</option>
-                                    <option value="date">Date</option>
+                                    <option value="day">Day (YYYY-MM-DD)</option>
+                                    <option value="week">Week (e.g. Wk of Sep 21)</option>
+                                    <option value="month">Month (e.g. Sep 2026)</option>
+                                    <option value="year">Year (e.g. 2026)</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label text-light small fw-bold">Column Dimension</label>
+                                <label class="form-label text-light small fw-bold">Column Grouping Dimension</label>
                                 <select class="form-select form-select-pt" ng-model="vm.pivotColKey" ng-change="vm.rebuildPivotTable()">
                                     <option value="categoryName">Category</option>
+                                    <option value="month">Month</option>
+                                    <option value="year">Year</option>
                                     <option value="totalOnly">Total Time Only</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- Rendered Pivot Table Matrix -->
-                        <div class="table-responsive">
+                        <!-- RENDER 1: TIME SUMMARY PIVOT TABLE -->
+                        <div class="table-responsive" ng-if="vm.pivotReportMode === 'summary'">
                             <table class="table table-pt table-bordered text-center align-middle">
                                 <thead>
                                     <tr>
@@ -674,9 +800,58 @@
                                         <td ng-repeat="col in vm.pivotData.columns" class="mono text-light" ng-bind="vm.formatDuration(row.cols[col] || 0)"></td>
                                         <td class="table-active mono fw-bold text-emerald" style="color: #34d399;" ng-bind="vm.formatDuration(row.totalSeconds)"></td>
                                     </tr>
+                                    <tr ng-if="vm.pivotData.rows.length === 0">
+                                        <td colspan="{{vm.pivotData.columns.length + 2}}" class="text-center py-4 text-light">No practice logs found in selected date range.</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- RENDER 2: TARGET VS ACTUAL REPORT TABLE -->
+                        <div class="table-responsive" ng-if="vm.pivotReportMode === 'targetVsActual'">
+                            <table class="table table-pt table-bordered text-center align-middle">
+                                <thead>
+                                    <tr>
+                                        <th class="text-start">Piece Title</th>
+                                        <th class="text-start">Category</th>
+                                        <th>Daily Target</th>
+                                        <th>Range Target (<span ng-bind="vm.getSelectedRangeDays()"></span> Days)</th>
+                                        <th>Actual Practiced</th>
+                                        <th>Variance (+ / -)</th>
+                                        <th>Target Met (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="row in vm.targetVsActualReportData">
+                                        <td class="text-start fw-bold text-white" ng-bind="row.pieceTitle"></td>
+                                        <td class="text-start">
+                                            <span class="badge badge-cat" ng-style="{'background-color': row.categoryColor}" ng-bind="row.categoryName"></span>
+                                        </td>
+                                        <td class="mono" ng-bind="row.dailyTargetMins + ' mins'"></td>
+                                        <td class="mono text-info fw-bold" ng-bind="row.rangeTargetMins + ' mins'"></td>
+                                        <td class="mono fw-bold text-white" ng-bind="row.actualMins + ' mins'"></td>
+                                        <td class="mono fw-bold" ng-class="row.varianceMins >= 0 ? 'text-emerald' : 'text-danger'">
+                                            <span ng-bind="(row.varianceMins >= 0 ? '+' : '') + row.varianceMins + ' mins'"></span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                                <div class="progress progress-pt flex-grow-1" style="min-width: 80px; max-width: 120px;">
+                                                    <div class="progress-bar" 
+                                                         ng-class="row.completionPct >= 100 ? 'progress-bar-emerald' : 'progress-bar-amber'" 
+                                                         role="progressbar" 
+                                                         ng-style="{'width': Math.min(100, row.completionPct) + '%'}"></div>
+                                                </div>
+                                                <span class="mono fw-bold text-white" ng-bind="row.completionPct + '%'"></span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr ng-if="vm.targetVsActualReportData.length === 0">
+                                        <td colspan="7" class="text-center py-4 text-light">No pieces or practice logs found.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -723,13 +898,22 @@
                         </div>
                         <div>
                             <label class="form-label text-light small fw-bold">Category *</label>
-                            <select class="form-select form-select-pt" ng-model="vm.editingPiece.categoryId" required>
-                                <option ng-repeat="cat in vm.categories" ng-value="cat.id" ng-bind="cat.name"></option>
+                            <select class="form-select form-select-pt" 
+                                    ng-model="vm.editingPiece.categoryId" 
+                                    ng-options="cat.id as cat.name for cat in vm.categories" 
+                                    required>
+                                <option value="" disabled>-- Select Category --</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="form-label text-light small fw-bold">Target Bars / Focus Area</label>
-                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.targetBars" placeholder="e.g. mm. 1-64 or Full Piece">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label text-light small fw-bold">Daily Target (Minutes) *</label>
+                                <input type="number" class="form-control form-control-pt" ng-model="vm.editingPiece.targetMinutes" min="1" max="600" required placeholder="15">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-light small fw-bold">Target Bars / Focus Area</label>
+                                <input type="text" class="form-control form-control-pt" ng-model="vm.editingPiece.targetBars" placeholder="e.g. mm. 1-64">
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -752,8 +936,8 @@
                 <form ng-submit="vm.saveCategoryForm()">
                     <div class="modal-body d-flex flex-column gap-3">
                         <div>
-                            <label class="form-label text-light small fw-bold">Category Name</label>
-                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingCategory.name" required placeholder="Category Name">
+                            <label class="form-label text-light small fw-bold">Category Name *</label>
+                            <input type="text" class="form-control form-control-pt" ng-model="vm.editingCategory.name" required placeholder="e.g. Scales & Technique">
                         </div>
                         <div>
                             <label class="form-label text-light small fw-bold">Badge Color</label>
@@ -762,6 +946,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-danger" ng-if="vm.editingCategory.id && vm.categories.length > 1" ng-click="vm.confirmDeleteCategory(vm.editingCategory)">Delete Category</button>
                         <button type="submit" class="btn btn-sky fw-bold">Save Category</button>
                     </div>
                 </form>
@@ -812,7 +997,7 @@
                 <div class="modal-body d-flex flex-column gap-3">
                     <div class="alert alert-dark border-secondary text-light small mb-0">
                         <i class="fa-solid fa-shield-halved text-emerald me-1"></i>
-                        <strong>100% Offline & Private:</strong> All practice logs and repertoire data are saved locally on this browser/device. No server is used.
+                        <strong>100% Offline & Private:</strong> All practice logs and repertoire data are saved locally on this browser/device using SafeStorage.
                     </div>
 
                     <p class="text-light small mb-0">Export your practice logs, repertoire pieces, and categories to a <code>.json</code> file on your local device, or import a previously exported file.</p>
@@ -839,15 +1024,88 @@
     </div>
 
     <script>
+        /**
+         * SafeStorage Fallback Wrapper for localStorage
+         * Protects against iPhone Files app sandboxes, Safari private browsing, or quota limits.
+         */
+        var SafeStorage = (function() {
+            var memoryStore = {};
+            var isAvailable = false;
+
+            try {
+                var testKey = '__safestorage_test__';
+                window.localStorage.setItem(testKey, testKey);
+                window.localStorage.removeItem(testKey);
+                isAvailable = true;
+            } catch (e) {
+                isAvailable = false;
+                console.warn('localStorage is unavailable or restricted. Using SafeStorage in-memory fallback.', e);
+            }
+
+            return {
+                getItem: function(key) {
+                    if (isAvailable) {
+                        try {
+                            return window.localStorage.getItem(key);
+                        } catch (e) {
+                            console.warn('Error reading from localStorage:', e);
+                        }
+                    }
+                    return memoryStore.hasOwnProperty(key) ? memoryStore[key] : null;
+                },
+                setItem: function(key, value) {
+                    if (isAvailable) {
+                        try {
+                            window.localStorage.setItem(key, value);
+                            return;
+                        } catch (e) {
+                            console.warn('Error writing to localStorage, switching to memory storage:', e);
+                        }
+                    }
+                    memoryStore[key] = String(value);
+                },
+                removeItem: function(key) {
+                    if (isAvailable) {
+                        try {
+                            window.localStorage.removeItem(key);
+                        } catch (e) {
+                            console.warn('Error removing from localStorage:', e);
+                        }
+                    }
+                    delete memoryStore[key];
+                },
+                isNative: function() {
+                    return isAvailable;
+                }
+            };
+        })();
+
         var app = angular.module('practiceTempoApp', []);
 
         app.controller('PracticeController', ['$scope', '$timeout', '$interval', function($scope, $timeout, $interval) {
             var vm = this;
+            $scope.Math = window.Math;
 
-            /**
-             * Helper to return a local date string formatted as YYYY-MM-DD.
-             * Fixes the off-by-one bug where toISOString() uses UTC, marking evening sessions as tomorrow's date.
-             */
+            // Default categories constant
+            var DEFAULT_CATEGORIES = [
+                { id: 1, name: 'Scales & Technique', color: '#38bdf8', icon: 'fa-graduation-cap' },
+                { id: 2, name: 'Repertoire Pieces', color: '#a855f7', icon: 'fa-music' },
+                { id: 3, name: 'Etudes & Exercises', color: '#ec4899', icon: 'fa-book-open' },
+                { id: 4, name: 'Sight Reading', color: '#10b981', icon: 'fa-eye' }
+            ];
+
+            vm.isNativeStorage = SafeStorage.isNative();
+
+            function sanitizeCategories(categories) {
+                if (!Array.isArray(categories) || categories.length === 0) {
+                    return angular.copy(DEFAULT_CATEGORIES);
+                }
+                var valid = categories.filter(function(c) {
+                    return c && typeof c === 'object' && c.id && c.name && String(c.name).trim() !== '';
+                });
+                return valid.length > 0 ? valid : angular.copy(DEFAULT_CATEGORIES);
+            }
+
             vm.getLocalDateString = function(dateInput) {
                 var d;
                 if (!dateInput) {
@@ -871,9 +1129,6 @@
                 return year + '-' + month + '-' + day;
             };
 
-            /**
-             * Helper to safely parse a YYYY-MM-DD string as a local Date object.
-             */
             vm.parseLocalDateString = function(dateStr) {
                 if (!dateStr) return new Date();
                 if (dateStr instanceof Date) return dateStr;
@@ -885,6 +1140,55 @@
                     return new Date(yr, mo, dy);
                 }
                 return new Date(dateStr);
+            };
+
+            // Date Range & Analytics Filters
+            var today = new Date();
+            var thirtyDaysAgo = new Date(today.getTime() - (29 * 24 * 60 * 60 * 1000));
+            
+            vm.fromDate = vm.parseLocalDateString(vm.getLocalDateString(thirtyDaysAgo));
+            vm.toDate = vm.parseLocalDateString(vm.getLocalDateString(today));
+            vm.trendGrouping = 'day';
+
+            vm.setPresetRange = function(preset) {
+                var now = new Date();
+                var start = new Date();
+
+                if (preset === 'today') {
+                    start = new Date(now);
+                } else if (preset === 'this_week') {
+                    var day = now.getDay();
+                    var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+                    start = new Date(now.setDate(diff));
+                    now = new Date();
+                } else if (preset === 'last_7_days') {
+                    start = new Date(now.getTime() - (6 * 24 * 60 * 60 * 1000));
+                } else if (preset === 'this_month') {
+                    start = new Date(now.getFullYear(), now.getMonth(), 1);
+                } else if (preset === 'last_30_days') {
+                    start = new Date(now.getTime() - (29 * 24 * 60 * 60 * 1000));
+                } else if (preset === 'this_year') {
+                    start = new Date(now.getFullYear(), 0, 1);
+                } else if (preset === 'all_time') {
+                    var earliest = now;
+                    vm.logs.forEach(function(l) {
+                        var ld = vm.parseLocalDateString(l.date);
+                        if (ld < earliest) earliest = ld;
+                    });
+                    start = earliest;
+                }
+
+                vm.fromDate = vm.parseLocalDateString(vm.getLocalDateString(start));
+                vm.toDate = vm.parseLocalDateString(vm.getLocalDateString(now));
+                vm.updateAnalyticsView();
+            };
+
+            vm.getSelectedRangeDays = function() {
+                if (!vm.fromDate || !vm.toDate) return 1;
+                var f = vm.parseLocalDateString(vm.getLocalDateString(vm.fromDate));
+                var t = vm.parseLocalDateString(vm.getLocalDateString(vm.toDate));
+                var diffTime = Math.abs(t - f);
+                return Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1);
             };
 
             vm.currentTab = 'practice';
@@ -911,7 +1215,7 @@
             vm.sessionMaxBpm = null;
             var timerInterval = null;
 
-            // Modal Title & Dialog State Bindings
+            // Modal State Bindings
             vm.confirmTitle = '';
             vm.confirmMessage = '';
             vm.confirmCallback = null;
@@ -950,11 +1254,13 @@
                     if (piece) {
                         vm.editingPiece = angular.copy(piece);
                     } else {
+                        var defaultCatId = (vm.categories && vm.categories[0]) ? vm.categories[0].id : 1;
                         vm.editingPiece = {
                             id: Date.now(),
                             title: '',
                             composer: '',
-                            categoryId: vm.categories[0] ? vm.categories[0].id : 1,
+                            categoryId: defaultCatId,
+                            targetMinutes: 20,
                             targetBars: '',
                             checklist: [],
                             isExpanded: true
@@ -1016,27 +1322,22 @@
                 }, 0);
             };
 
-            var STORAGE_KEY = 'PracticeTempo_V3_Data';
+            var STORAGE_KEY = 'PracticeTempo_V5_Data';
 
             function loadInitialData() {
-                var raw = localStorage.getItem(STORAGE_KEY);
+                var raw = SafeStorage.getItem(STORAGE_KEY);
                 if (raw) {
                     try {
                         var parsed = JSON.parse(raw);
-                        vm.categories = parsed.categories || [];
-                        vm.pieces = parsed.pieces || [];
-                        vm.logs = parsed.logs || [];
+                        vm.categories = sanitizeCategories(parsed.categories);
+                        vm.pieces = Array.isArray(parsed.pieces) ? parsed.pieces : [];
+                        vm.logs = Array.isArray(parsed.logs) ? parsed.logs : [];
+                        vm.saveData();
                         return;
                     } catch(e) { console.error('Failed to parse storage', e); }
                 }
 
-                // Default high-contrast seed data
-                vm.categories = [
-                    { id: 1, name: 'Scales & Technique', color: '#38bdf8', icon: 'fa-graduation-cap' },
-                    { id: 2, name: 'Repertoire Pieces', color: '#a855f7', icon: 'fa-music' },
-                    { id: 3, name: 'Etudes & Exercises', color: '#ec4899', icon: 'fa-book-open' },
-                    { id: 4, name: 'Sight Reading', color: '#10b981', icon: 'fa-eye' }
-                ];
+                vm.categories = angular.copy(DEFAULT_CATEGORIES);
 
                 vm.pieces = [
                     {
@@ -1044,6 +1345,7 @@
                         title: 'Moonlight Sonata - 1st Mvt',
                         composer: 'L. v. Beethoven',
                         categoryId: 2,
+                        targetMinutes: 20,
                         targetBars: 'mm. 1-69',
                         isExpanded: true,
                         checklist: [
@@ -1057,6 +1359,7 @@
                         title: 'Hanon Exercise No. 1',
                         composer: 'C.L. Hanon',
                         categoryId: 1,
+                        targetMinutes: 15,
                         targetBars: 'Ascending & Descending',
                         isExpanded: false,
                         checklist: [
@@ -1076,7 +1379,7 @@
                         date: todayStr,
                         startTimeFormatted: '10:15 AM',
                         endTimeFormatted: '10:45 AM',
-                        durationSeconds: 1800,
+                        durationSeconds: 1200,
                         minBpm: 58,
                         maxBpm: 66,
                         startTimeTimestamp: Date.now() - 3600000
@@ -1087,16 +1390,31 @@
             }
 
             vm.saveData = function() {
+                vm.categories = sanitizeCategories(vm.categories);
+
+                var validCatIds = vm.categories.map(function(c) { return c.id; });
+                var defaultCatId = vm.categories[0].id;
+
+                vm.pieces.forEach(function(p) {
+                    if (validCatIds.indexOf(p.categoryId) === -1) {
+                        p.categoryId = defaultCatId;
+                    }
+                    if (!p.targetMinutes || p.targetMinutes <= 0) {
+                        p.targetMinutes = 15;
+                    }
+                });
+
                 var data = {
                     categories: vm.categories,
                     pieces: vm.pieces,
                     logs: vm.logs
                 };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                SafeStorage.setItem(STORAGE_KEY, JSON.stringify(data));
             };
 
             vm.getCategory = function(catId) {
-                return vm.categories.find(function(c) { return c.id === catId; }) || { name: 'Uncategorized', color: '#64748b' };
+                var found = vm.categories.find(function(c) { return c.id === catId; });
+                return found || vm.categories[0] || { name: 'Uncategorized', color: '#64748b' };
             };
 
             vm.getPieceCountForCategory = function(catId) {
@@ -1131,6 +1449,8 @@
             };
 
             vm.saveCategoryForm = function() {
+                if (!vm.editingCategory.name || String(vm.editingCategory.name).trim() === '') return;
+                
                 var existingIndex = vm.categories.findIndex(function(c) { return c.id === vm.editingCategory.id; });
                 if (existingIndex > -1) {
                     vm.categories[existingIndex] = vm.editingCategory;
@@ -1140,6 +1460,20 @@
                 vm.saveData();
                 var m = getModal('categoryModal');
                 if (m) m.hide();
+            };
+
+            vm.confirmDeleteCategory = function(cat) {
+                if (vm.categories.length <= 1) {
+                    vm.openConfirmModal('Cannot Delete', 'At least one category must remain.');
+                    return;
+                }
+                vm.openConfirmModal('Delete Category', 'Delete category "' + cat.name + '"? Associated pieces will be moved to ' + vm.categories[0].name + '.', function() {
+                    vm.categories = vm.categories.filter(function(c) { return c.id !== cat.id; });
+                    if (vm.selectedCategoryFilter === cat.id) vm.selectedCategoryFilter = null;
+                    vm.saveData();
+                    var m = getModal('categoryModal');
+                    if (m) m.hide();
+                });
             };
 
             // Checklist Functions
@@ -1158,23 +1492,35 @@
                 vm.saveData();
             };
 
-            /* -----------------------------------------------------------------
-             * PIECE-LEVEL PRACTICE TIMER (BACKGROUND RESILIENT)
-             * ----------------------------------------------------------------- */
+            // Piece Progress & Daily Target Calculations
+            vm.getTodayPieceMinutes = function(pieceId) {
+                var todayStr = vm.getLocalDateString(new Date());
+                var loggedSecs = vm.logs.filter(function(l) { return l.date === todayStr && l.pieceId === pieceId; })
+                                        .reduce(function(acc, l) { return acc + (l.durationSeconds || 0); }, 0);
+                if (vm.activePiece && vm.activePiece.id === pieceId) {
+                    loggedSecs += vm.currentElapsedSeconds;
+                }
+                return Math.round(loggedSecs / 60);
+            };
+
+            vm.getTodayPieceProgressPct = function(piece) {
+                var target = piece.targetMinutes || 15;
+                var current = vm.getTodayPieceMinutes(piece.id);
+                return Math.min(999, Math.round((current / target) * 100));
+            };
+
             vm.startPracticeForPiece = function(piece) {
-                // If clicking the currently active piece: toggle pause/resume
                 if (vm.activePiece && vm.activePiece.id === piece.id) {
                     vm.toggleTimer();
                     return;
                 }
 
-                // If switching from another piece: save previous session first
                 if (vm.activePiece) {
                     vm.stopAndSaveSession();
                 }
 
                 vm.activePiece = piece;
-                piece.isExpanded = true; // Auto-expand checklist when practicing this piece
+                piece.isExpanded = true;
                 vm.elapsedBeforePause = 0;
                 vm.sessionMinBpm = vm.metronomeRunning ? vm.metronomeBpm : null;
                 vm.sessionMaxBpm = vm.metronomeRunning ? vm.metronomeBpm : null;
@@ -1191,7 +1537,6 @@
                     if (vm.timerRunning) {
                         vm.currentElapsedSeconds = Math.floor((Date.now() - vm.sessionStartTimestamp) / 1000);
                         
-                        // Metronome BPM tracking
                         if (vm.metronomeRunning) {
                             if (vm.sessionMinBpm === null || vm.metronomeBpm < vm.sessionMinBpm) vm.sessionMinBpm = vm.metronomeBpm;
                             if (vm.sessionMaxBpm === null || vm.metronomeBpm > vm.sessionMaxBpm) vm.sessionMaxBpm = vm.metronomeBpm;
@@ -1215,7 +1560,6 @@
                 if (vm.currentElapsedSeconds >= 3) {
                     var now = new Date();
                     var startObj = new Date(now.getTime() - (vm.currentElapsedSeconds * 1000));
-                    
                     var cat = vm.getCategory(vm.activePiece.categoryId);
 
                     var logEntry = {
@@ -1248,9 +1592,7 @@
                 vm.elapsedBeforePause = 0;
             };
 
-            /* -----------------------------------------------------------------
-             * WEB AUDIO METRONOME (iOS SAFARI COMPATIBLE)
-             * ----------------------------------------------------------------- */
+            // Metronome Functions
             function initAudioContext() {
                 if (!audioCtx) {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1325,7 +1667,6 @@
                 return new Array(vm.beatsPerMeasure);
             };
 
-            /* Screen Wake Lock API */
             vm.toggleWakeLock = function() {
                 if (!('wakeLock' in navigator)) {
                     vm.openConfirmModal('Wake Lock Unsupported', 'Your device/browser does not support Screen Wake Lock API.');
@@ -1346,7 +1687,6 @@
                 }
             };
 
-            /* Logs & Manual Entry */
             vm.saveLogForm = function() {
                 if (vm.editingLog.id) {
                     var idx = vm.logs.findIndex(function(l) { return l.id === vm.editingLog.id; });
@@ -1374,13 +1714,10 @@
                 });
             };
 
-            /* -----------------------------------------------------------------
-             * LOCAL DEVICE BACKUP & RESTORE (100% OFFLINE, BLOB & FILEREADER)
-             * ----------------------------------------------------------------- */
             vm.exportBackupJSON = function() {
                 try {
                     var dataObj = {
-                        version: '3.1',
+                        version: '5.0',
                         exportDate: vm.getLocalDateString(new Date()),
                         categories: vm.categories,
                         pieces: vm.pieces,
@@ -1417,7 +1754,7 @@
                     try {
                         var parsed = JSON.parse(e.target.result);
                         if (parsed && Array.isArray(parsed.categories) && Array.isArray(parsed.pieces) && Array.isArray(parsed.logs)) {
-                            vm.categories = parsed.categories;
+                            vm.categories = sanitizeCategories(parsed.categories);
                             vm.pieces = parsed.pieces;
                             vm.logs = parsed.logs;
                             vm.saveData();
@@ -1441,7 +1778,7 @@
 
             vm.confirmResetData = function() {
                 vm.openConfirmModal('Reset All Data', 'Are you sure you want to reset all data to default values?', function() {
-                    localStorage.removeItem(STORAGE_KEY);
+                    SafeStorage.removeItem(STORAGE_KEY);
                     loadInitialData();
                     $scope.$applyAsync();
                     var m = getModal('backupModal');
@@ -1449,17 +1786,19 @@
                 });
             };
 
-            /* -----------------------------------------------------------------
-             * SUMMARY & PIVOT MATRIX ANALYTICS
-             * ----------------------------------------------------------------- */
+            // Pivot Table & Target vs Actual Report State
+            vm.pivotReportMode = 'summary'; // 'summary' or 'targetVsActual'
             vm.pivotRowKey = 'pieceTitle';
             vm.pivotColKey = 'categoryName';
             vm.pivotData = { rows: [], columns: [] };
+            vm.targetVsActualReportData = [];
 
             vm.getTodayTotalSeconds = function() {
                 var todayStr = vm.getLocalDateString(new Date());
-                return vm.logs.filter(function(l) { return l.date === todayStr; })
-                              .reduce(function(acc, l) { return acc + (l.durationSeconds || 0); }, 0);
+                var logged = vm.logs.filter(function(l) { return l.date === todayStr; })
+                                  .reduce(function(acc, l) { return acc + (l.durationSeconds || 0); }, 0);
+                if (vm.activePiece) logged += vm.currentElapsedSeconds;
+                return logged;
             };
 
             vm.getTodaySessionCount = function() {
@@ -1467,60 +1806,186 @@
                 return vm.logs.filter(function(l) { return l.date === todayStr; }).length;
             };
 
-            vm.rebuildPivotTable = function() {
-                var colMap = {};
-                var rowMap = {};
+            vm.getFilteredLogs = function() {
+                if (!vm.fromDate || !vm.toDate) return vm.logs;
+                var fromStr = vm.getLocalDateString(vm.fromDate);
+                var toStr = vm.getLocalDateString(vm.toDate);
 
-                vm.logs.forEach(function(l) {
-                    var rVal = l[vm.pivotRowKey] || 'Unassigned';
-                    var cVal = (vm.pivotColKey === 'totalOnly') ? 'Time' : (l[vm.pivotColKey] || 'Other');
-
-                    colMap[cVal] = true;
-                    if (!rowMap[rVal]) rowMap[rVal] = { name: rVal, cols: {}, totalSeconds: 0 };
-
-                    if (!rowMap[rVal].cols[cVal]) rowMap[rVal].cols[cVal] = 0;
-                    rowMap[rVal].cols[cVal] += l.durationSeconds;
-                    rowMap[rVal].totalSeconds += l.durationSeconds;
+                return vm.logs.filter(function(l) {
+                    return l.date >= fromStr && l.date <= toStr;
                 });
+            };
 
-                vm.pivotData.columns = Object.keys(colMap);
-                vm.pivotData.rows = Object.keys(rowMap).map(function(k) { return rowMap[k]; });
+            // Grouping Label Generators
+            function getGroupKey(log, keyType) {
+                if (keyType === 'day') return log.date;
+                if (keyType === 'pieceTitle') return log.pieceTitle;
+                if (keyType === 'categoryName') return log.categoryName;
+                
+                var d = vm.parseLocalDateString(log.date);
+                if (keyType === 'week') {
+                    var day = d.getDay();
+                    var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                    var mon = new Date(d.setDate(diff));
+                    var monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                    return "Wk of " + monthNames[mon.getMonth()] + " " + mon.getDate();
+                }
+                if (keyType === 'month') {
+                    var mNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                    return mNames[d.getMonth()] + " " + d.getFullYear();
+                }
+                if (keyType === 'year') {
+                    return String(d.getFullYear());
+                }
+                return log[keyType] || 'Other';
+            }
+
+            vm.rebuildPivotTable = function() {
+                var filtered = vm.getFilteredLogs();
+                var rangeDays = vm.getSelectedRangeDays();
+
+                if (vm.pivotReportMode === 'summary') {
+                    var colMap = {};
+                    var rowMap = {};
+
+                    filtered.forEach(function(l) {
+                        var rVal = getGroupKey(l, vm.pivotRowKey);
+                        var cVal = (vm.pivotColKey === 'totalOnly') ? 'Time' : getGroupKey(l, vm.pivotColKey);
+
+                        colMap[cVal] = true;
+                        if (!rowMap[rVal]) rowMap[rVal] = { name: rVal, cols: {}, totalSeconds: 0 };
+
+                        if (!rowMap[rVal].cols[cVal]) rowMap[rVal].cols[cVal] = 0;
+                        rowMap[rVal].cols[cVal] += l.durationSeconds;
+                        rowMap[rVal].totalSeconds += l.durationSeconds;
+                    });
+
+                    vm.pivotData.columns = Object.keys(colMap);
+                    vm.pivotData.rows = Object.keys(rowMap).map(function(k) { return rowMap[k]; });
+                } else if (vm.pivotReportMode === 'targetVsActual') {
+                    // Target vs Actual Report per Piece
+                    var report = [];
+
+                    vm.pieces.forEach(function(piece) {
+                        var cat = vm.getCategory(piece.categoryId);
+                        var pieceLogs = filtered.filter(function(l) { return l.pieceTitle === piece.title; });
+                        var totalActualSecs = pieceLogs.reduce(function(acc, l) { return acc + l.durationSeconds; }, 0);
+                        var actualMins = Math.round(totalActualSecs / 60);
+
+                        var dailyTarget = piece.targetMinutes || 15;
+                        var rangeTargetMins = dailyTarget * rangeDays;
+                        var variance = actualMins - rangeTargetMins;
+                        var completionPct = rangeTargetMins > 0 ? Math.min(999, Math.round((actualMins / rangeTargetMins) * 100)) : 0;
+
+                        report.push({
+                            pieceTitle: piece.title,
+                            categoryName: cat.name,
+                            categoryColor: cat.color,
+                            dailyTargetMins: dailyTarget,
+                            rangeTargetMins: rangeTargetMins,
+                            actualMins: actualMins,
+                            varianceMins: variance,
+                            completionPct: completionPct
+                        });
+                    });
+
+                    vm.targetVsActualReportData = report;
+                }
+            };
+
+            vm.updateAnalyticsView = function() {
+                vm.rebuildPivotTable();
+                $timeout(renderCharts, 100);
             };
 
             vm.switchTab = function(tabName) {
                 vm.currentTab = tabName;
                 if (tabName === 'analytics') {
-                    vm.rebuildPivotTable();
-                    $timeout(renderCharts, 100);
+                    vm.updateAnalyticsView();
                 }
             };
 
+            var targetVsActualChartInstance = null;
             var trendChartInstance = null;
+            var targetDoughnutChartInstance = null;
             var catChartInstance = null;
 
             function renderCharts() {
+                var ctxTvA = document.getElementById('targetVsActualChart');
                 var ctxTrend = document.getElementById('trendChart');
+                var ctxGauge = document.getElementById('targetDoughnutChart');
                 var ctxCat = document.getElementById('categoryChart');
-                if (!ctxTrend || !ctxCat) return;
 
+                if (!ctxTvA || !ctxTrend || !ctxGauge || !ctxCat) return;
+
+                if (targetVsActualChartInstance) targetVsActualChartInstance.destroy();
                 if (trendChartInstance) trendChartInstance.destroy();
+                if (targetDoughnutChartInstance) targetDoughnutChartInstance.destroy();
                 if (catChartInstance) catChartInstance.destroy();
 
-                var dateTotals = {};
-                vm.logs.forEach(function(l) {
-                    dateTotals[l.date] = (dateTotals[l.date] || 0) + Math.round(l.durationSeconds / 60);
+                var filtered = vm.getFilteredLogs();
+                var rangeDays = vm.getSelectedRangeDays();
+
+                // 1. Target vs Actual Dual-Bar Chart
+                var pieceLabels = [];
+                var actualData = [];
+                var targetData = [];
+
+                vm.pieces.forEach(function(piece) {
+                    pieceLabels.push(piece.title.length > 18 ? piece.title.substring(0, 15) + '...' : piece.title);
+                    var pLogs = filtered.filter(function(l) { return l.pieceTitle === piece.title; });
+                    var totalMins = Math.round(pLogs.reduce(function(acc, l) { return acc + l.durationSeconds; }, 0) / 60);
+                    actualData.push(totalMins);
+                    targetData.push((piece.targetMinutes || 15) * rangeDays);
                 });
 
-                var dates = Object.keys(dateTotals).sort().slice(-7);
-                var trendMinutes = dates.map(function(d) { return dateTotals[d]; });
+                targetVsActualChartInstance = new Chart(ctxTvA, {
+                    type: 'bar',
+                    data: {
+                        labels: pieceLabels,
+                        datasets: [
+                            {
+                                label: 'Actual Practiced (Mins)',
+                                data: actualData,
+                                backgroundColor: '#10b981'
+                            },
+                            {
+                                label: 'Target Target (Mins)',
+                                data: targetData,
+                                backgroundColor: '#2a3756'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#ffffff' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#cbd5e1' }, grid: { color: '#2a3756' } },
+                            y: { ticks: { color: '#cbd5e1' }, grid: { color: '#2a3756' } }
+                        }
+                    }
+                });
+
+                // 2. Grouped Time Trend Line
+                var trendGroupTotals = {};
+                filtered.forEach(function(l) {
+                    var key = getGroupKey(l, vm.trendGrouping);
+                    trendGroupTotals[key] = (trendGroupTotals[key] || 0) + Math.round(l.durationSeconds / 60);
+                });
+
+                var trendKeys = Object.keys(trendGroupTotals);
+                var trendMins = trendKeys.map(function(k) { return trendGroupTotals[k]; });
 
                 trendChartInstance = new Chart(ctxTrend, {
                     type: 'line',
                     data: {
-                        labels: dates,
+                        labels: trendKeys,
                         datasets: [{
-                            label: 'Minutes Practiced',
-                            data: trendMinutes,
+                            label: 'Practice Minutes',
+                            data: trendMins,
                             borderColor: '#38bdf8',
                             backgroundColor: 'rgba(56, 189, 248, 0.2)',
                             fill: true,
@@ -1531,12 +1996,41 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } }
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#cbd5e1' }, grid: { color: '#2a3756' } },
+                            y: { ticks: { color: '#cbd5e1' }, grid: { color: '#2a3756' } }
+                        }
                     }
                 });
 
+                // 3. Target Completion Doughnut Gauge
+                var totalActualRangeMins = actualData.reduce(function(a, b) { return a + b; }, 0);
+                var totalTargetRangeMins = targetData.reduce(function(a, b) { return a + b; }, 0);
+                var metMins = Math.min(totalActualRangeMins, totalTargetRangeMins);
+                var deficitMins = Math.max(0, totalTargetRangeMins - totalActualRangeMins);
+
+                targetDoughnutChartInstance = new Chart(ctxGauge, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Target Met (Mins)', 'Target Deficit (Mins)'],
+                        datasets: [{
+                            data: [metMins, deficitMins],
+                            backgroundColor: ['#10b981', '#f43f5e']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#ffffff' } }
+                        }
+                    }
+                });
+
+                // 4. Category Distribution Chart
                 var catTotals = {};
-                vm.logs.forEach(function(l) {
+                filtered.forEach(function(l) {
                     catTotals[l.categoryName] = (catTotals[l.categoryName] || 0) + Math.round(l.durationSeconds / 60);
                 });
 
@@ -1551,7 +2045,10 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#ffffff' } }
+                        }
                     }
                 });
             }
