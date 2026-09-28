@@ -694,7 +694,7 @@
                 <div class="col-lg-6">
                     <div class="card card-pt p-4 h-100">
                         <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-chart-column text-info me-2"></i> Target vs. Actual Practice (Minutes)</h5>
-                        <div style="position: relative; min-height: 280px;">
+                        <div style="position: relative; min-height: 280px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; ">
                             <canvas id="targetVsActualChart"></canvas>
                         </div>
                     </div>
@@ -1321,6 +1321,35 @@
                     if (m) m.show();
                 }, 0);
             };
+      
+		function extractLogs(parsed) {
+  if (!parsed) return [];
+
+  // Case 1: The parsed root itself is an array
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  // Case 2: Standard object with a logs array property
+  if (Array.isArray(parsed.logs)) {
+    return parsed.logs;
+  }
+
+  // Case 3: Double-serialized JSON string inside parsed.logs
+  if (typeof parsed.logs === 'string') {
+    try {
+      const inner = JSON.parse(parsed.logs);
+      if (Array.isArray(inner)) return inner;
+    } catch (e) { /* ignore parse error */ }
+  }
+
+  // Case 4: Key-value dictionary object -> convert to array values
+  if (parsed.logs && typeof parsed.logs === 'object') {
+    return Object.values(parsed.logs);
+  }
+
+  return [];
+}
 
             var STORAGE_KEY = 'PracticeTempo_V5_Data';
 
@@ -1752,6 +1781,7 @@
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     try {
+                        SafeStorage.removeItem(STORAGE_KEY);  
                         var parsed = JSON.parse(e.target.result);
                         if (parsed && Array.isArray(parsed.categories) && Array.isArray(parsed.pieces) && Array.isArray(parsed.logs)) {
                             vm.categories = sanitizeCategories(parsed.categories);
